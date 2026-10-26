@@ -1,0 +1,60 @@
+name: ci
+
+# Every job runs on every PR and every push to main, so each check always reports a status.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Cancel superseded PR runs; let every run on main finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Installs the toolchain named in rust-toolchain.toml.
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets --all-features --locked -- -D warnings
+      # The library without its HTTPS transport (and without the binary) must also
+      # build cleanly.
+      - run: cargo clippy --all-targets --no-default-features --locked -- -D warnings
+      # Tests are offline: saved devnet responses, fakes, and a closed local port.
+      - run: cargo test --locked
+      - run: cargo test --no-default-features --locked
+      # Bans the keypair, signer, seed-phrase and sending crates; fails on a security
+      # advisory or a crate from outside crates.io. The script owns the pinned version
+      # and its checksums.
+      - run: scripts/cargo-deny.sh
+      # Shows, offline, that `check bans` refuses a banned crate. After the build, so the
+      # cargo cache holds every crate the graph needs.
+      - run: scripts/test-deny-bans.sh
+      # The files a release would contain, built from the packaged sources alone.
+      - run: cargo package --locked
+
+  repo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # No secrets, credentialed RPC URLs or personal data in tracked files, and every
+      # file at most 1,000 lines.
+      - run: scripts/leak-check.sh
+      # Offline: each leak-check rule fails on a planted case.
+      - run: scripts/test-leak-check.sh

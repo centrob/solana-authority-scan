@@ -1,0 +1,51 @@
+# cargo-deny settings. CI runs `cargo deny check bans advisories sources`
+# (scripts/cargo-deny.sh). The scanner never signs or sends a transaction and holds no
+# keys, so no crate that makes keypairs, signs or sends may enter the dependency tree.
+# scripts/test-deny-bans.sh shows, offline, that `check bans` refuses a banned crate.
+
+[graph]
+all-features = true
+
+[bans]
+multiple-versions = "allow"
+wildcards = "deny"
+deny = [
+  # ed25519 signing.
+  { crate = "ed25519-dalek", reason = "signs with ed25519 keys; the scanner holds no keys" },
+  { crate = "ed25519-compact", reason = "signs with ed25519 keys; the scanner holds no keys" },
+  # The Solana SDK and its keypair, signer and client crates.
+  { crate = "solana-sdk", reason = "carries keypair and signer modules" },
+  { crate = "solana-keypair", reason = "makes and holds private keys" },
+  { crate = "solana-signer", reason = "signs transactions" },
+  { crate = "solana-signature", reason = "comes with signing and verifying code; the crate has its own read-only Signature type" },
+  { crate = "solana-client", reason = "sends transactions" },
+  { crate = "solana-rpc-client", reason = "sends transactions" },
+  { crate = "solana-rpc-client-api", reason = "the sending RPC client's request types" },
+  { crate = "anchor-client", reason = "signs and sends transactions" },
+  { crate = "solana-cli-config", reason = "points at a keypair file" },
+  # Seed phrases, key derivation and hardware wallets.
+  { crate = "solana-seed-phrase", reason = "turns a seed phrase into a key" },
+  { crate = "solana-seed-derivable", reason = "derives keys from a seed" },
+  { crate = "solana-derivation-path", reason = "derives keys along a path" },
+  { crate = "solana-remote-wallet", reason = "signs with a hardware wallet" },
+  { crate = "bip39", reason = "makes and reads seed phrases" },
+  { crate = "tiny-bip39", reason = "makes and reads seed phrases" },
+  { crate = "ed25519-dalek-bip32", reason = "derives ed25519 signing keys" },
+]
+
+[sources]
+# Only crates.io. A crate from another registry or a git repository is refused.
+unknown-registry = "deny"
+unknown-git = "deny"
+
+[advisories]
+# A yanked crate in the lockfile fails the check.
+yanked = "deny"
+ignore = [
+  # Informational "unmaintained" notices against ring, which rustls uses through ureq.
+  # Neither is a vulnerability, and neither matches ring 0.17.14 today (one is
+  # withdrawn, the other covers versions before 0.17), so cargo-deny may report them as
+  # not detected. Each is allowed by id, so any other ring advisory still fails.
+  { id = "RUSTSEC-2025-0007", reason = "ring maintenance notice, withdrawn" },
+  { id = "RUSTSEC-2025-0010", reason = "ring before 0.17 is unmaintained; the lockfile has 0.17.14" },
+]

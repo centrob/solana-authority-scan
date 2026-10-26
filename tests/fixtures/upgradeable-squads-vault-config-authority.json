@@ -1,0 +1,72 @@
+{
+  "accounts": {
+    "9xmgvHz1zP53v9zFS3zWLg7ZJecq81WNw3V7x86sTxrV": {
+      "account": {
+        "data_base64": "AgAAAAbZKGTq4Fz4yC5+s/efhPYvaAJin+ivx22pXyNsmpKA",
+        "data_len": 36,
+        "data_saved": "full",
+        "executable": true,
+        "lamports": 1141440,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964524
+    },
+    "BtVo6MhvsC9TQkyisnxMjDKTVPpF7cUmcvvhFMZzia98": {
+      "account": {
+        "data_base64": "Gl69u3SINSH63MO/kzkyb2Gh1G68CBKmb8GUll8AP2vvbeM1eNMX4wEAAAAAAAAABYLs8GkAAAAA+gIAAAAlgI0OYlXxiN0ONfEqjkCnwuw0illh+8Yy3hajA4CHK3RWFjmRV2FKEit7IW7V/BmlpjD5jS4RN9SEjaGmmjVR",
+        "data_len": 454,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 4050720,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964525
+    },
+    "HtGArEjZUYXdUozqaUZFQUhHoe3bSmCon9S4b6sEyAxS": {
+      "account": {
+        "data_base64": "4HR5ukShT+yEbthyYX2p8ow67JSed6/vfTRfrnUS6Bc2j0TOMYXKmiWAjQ5iVfGI3Q418SqOQKfC7DSKWWH7xjLeFqMDgIcrAgAAAAAAAQAAAAAAAAAAAAAAAAAAAAD+BAAAABeK6CyjUd1RSVPaCp5unpZpKfMBS4x7iEr6mi0LzRq5AiWAjQ5iVfGI3Q418SqOQKfC7DSKWWH7xjLeFqMDgIcrByfTVvYlYcz4KyWgJUe9+KflQDR8gIe7r7TU02azN65bAnRWFjmRV2FKEit7IW7V/BmlpjD5jS4RN9SEjaGmmjVRAg==",
+        "data_len": 528,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 4565760,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964524
+    },
+    "TjW6WMkAf8wHwkuNq7dgnRztZBRRb5YCo1QXf92sNhV": {
+      "account": {
+        "data_base64": "AwAAAOZWVxsAAAAAAQSVSknh1QF7pV5aUdmc7TXfI+pWpR3e5w7GINlWK2cB",
+        "data_len": 280109,
+        "data_saved": "header",
+        "executable": false,
+        "lamports": 1950449520,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964524
+    }
+  },
+  "captured_at_slot": 514964525,
+  "cluster": "devnet",
+  "description": "Upgradeable program whose authority is a Squads v4 vault; the multisig has a config authority, threshold 2 of 4 members and time lock 0.",
+  "program": "9xmgvHz1zP53v9zFS3zWLg7ZJecq81WNw3V7x86sTxrV",
+  "program_accounts": {
+    "11111111111111111111111111111111:2auEAmjGnKyz4E1JLXVh59YjWYMDv717yU6KgCzQbtbz": {
+      "addresses": [],
+      "slot": 514964524
+    },
+    "11111111111111111111111111111111:3XPn1NpR9H4byZQUpDTf6c4eq55aXNiU6Ax3gC3ACN2v": {
+      "addresses": [],
+      "slot": 514964527
+    },
+    "11111111111111111111111111111111:3gTozCxwy7K6Gn2mjht1cvq7RGYLEQdjDLU3VR6WqTAz": {
+      "addresses": [],
+      "slot": 514964528
+    },
+    "11111111111111111111111111111111:8q8RrfZFPjt9cKDRkmB3y4LhcK5yRkefD89jPBbby8jr": {
+      "addresses": [],
+      "slot": 514964531
+    }
+  },
+  "signatures": {},
+  "transactions": {}
+}

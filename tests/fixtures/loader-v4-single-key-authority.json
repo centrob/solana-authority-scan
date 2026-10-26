@@ -1,0 +1,27 @@
+{
+  "accounts": {
+    "RrQnrwVoEKo7PDPuh2ABDJzecYvMf7Cb2uDm9v9MYeA": {
+      "account": {
+        "data_base64": "n+5QFwAAAABwi7+X6hff7FW38475NeNrQ7NNjntIFJkm7cF/O6qZrQEAAAAAAAAA",
+        "data_len": 54480,
+        "data_saved": "header",
+        "executable": true,
+        "lamports": 380071680,
+        "owner": "LoaderV411111111111111111111111111111111111"
+      },
+      "slot": 514964619
+    }
+  },
+  "captured_at_slot": 514964619,
+  "cluster": "devnet",
+  "description": "Loader-v4 program, deployed, whose authority is a single key.",
+  "program": "RrQnrwVoEKo7PDPuh2ABDJzecYvMf7Cb2uDm9v9MYeA",
+  "program_accounts": {
+    "11111111111111111111111111111111:8aLFsNZZReyFqvfEotJxFtRc1CZ4LzpedRLEuGrwmmg8": {
+      "addresses": [],
+      "slot": 514964619
+    }
+  },
+  "signatures": {},
+  "transactions": {}
+}

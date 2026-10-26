@@ -1,0 +1,33 @@
+{
+  "accounts": {
+    "12zjuTsmzpN75z1QWoUR7eb2ZJuq2mbrcCfSTDDdn1TS": {
+      "account": {
+        "data_base64": "AwAAAJIpWB4AAAAAAERPXvgI3UOUb0kD2uvZ+MPXLH01RBY0HyVnF6t1SGkH",
+        "data_len": 47205,
+        "data_saved": "header",
+        "executable": false,
+        "lamports": 240451640,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964605
+    },
+    "58L4q3DgvPdvRh7kX4v148EwEwd29WHh4RfaZJR69iYx": {
+      "account": {
+        "data_base64": "AgAAAACC3gmXJ2H4O6XBaxj7PLZ4DLVdf/u76L1tTQhhoR3F",
+        "data_len": 36,
+        "data_saved": "full",
+        "executable": true,
+        "lamports": 833120,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964605
+    }
+  },
+  "captured_at_slot": 514964605,
+  "cluster": "devnet",
+  "description": "Upgradeable program with no upgrade authority (immutable).",
+  "program": "58L4q3DgvPdvRh7kX4v148EwEwd29WHh4RfaZJR69iYx",
+  "program_accounts": {},
+  "signatures": {},
+  "transactions": {}
+}

@@ -1,0 +1,38 @@
+{
+  "accounts": {
+    "8eYh1HSHzX2aqqbQU1thPGu1ZwCYMv2Uf2r45oy5K3m3": {
+      "account": {
+        "data_base64": "AgAAAJyncPjnOqSWgyqpz5+2XN4kjnUtCextp8jpJuQb34D6",
+        "data_len": 36,
+        "data_saved": "full",
+        "executable": true,
+        "lamports": 1141440,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964596
+    },
+    "BYWgqLhgfodAgDrUmFgMydVwSgRSbyU4Taqfz3B6JNkH": {
+      "account": {
+        "data_base64": "AwAAAOC+bRQAAAAAAQAIevmuGIFDosi7dc2FX0r7oeUSDR/quE9nU8R+O0D9",
+        "data_len": 169381,
+        "data_saved": "header",
+        "executable": false,
+        "lamports": 1179782640,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964596
+    }
+  },
+  "captured_at_slot": 514964596,
+  "cluster": "devnet",
+  "description": "Upgradeable program whose authority is a single key.",
+  "program": "8eYh1HSHzX2aqqbQU1thPGu1ZwCYMv2Uf2r45oy5K3m3",
+  "program_accounts": {
+    "11111111111111111111111111111111:18W1HSbXvKGny4oRBjZPdkCKVQsPyhjrZeNeDPqUvh2": {
+      "addresses": [],
+      "slot": 514964596
+    }
+  },
+  "signatures": {},
+  "transactions": {}
+}

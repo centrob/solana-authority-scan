@@ -1,0 +1,75 @@
+{
+  "accounts": {
+    "5zHfk35SVK8B4hihdsdyEsE939dzKLrYzAbRjhKvvad7": {
+      "account": {
+        "data_base64": "Gl69u3SINSGDdC1iKvo1NjjXHf62bH+i9xQCijd4WMmrXrrcndxjAAEAAAAAAAAAA5fEA2oAAAAA/gIAAACt/Rg2zguiTTa+4vXZ/PHBmtZ4Zo/wM4QuKFgQlIspbfMCpH1/5friAgLLqZ3hCXyFfvCKfinoaHRTeV0xfgod",
+        "data_len": 550,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 4718880,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964540
+    },
+    "9r9A4PrroU3mrqf817YTYtQw3mKm4cbXtk4hJKArS9wD": {
+      "account": {
+        "data_base64": "4HR5ukShT+wDmcWnP4DpITpjwxHp3MlZ6roR5XmDyQHpulFYTTVrkQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAgAAAAAAAAAAAAAAAAAAAAD/BQAAABE+UeiVrI3QQM1G9hVcKVh+XYKPVxw2O4lwbz5T7IDHB639GDbOC6JNNr7i9dn88cGa1nhmj/AzhC4oWBCUiyltB+HlrnEBD5JL1NjG+pA13xQJh4q7u1GFpOxiB8rgCcblB+gH5xmVyJ/SI4wJ9c41HENqxCTV6Lc94Qa2Nh25rqRtB/MCpH1/5friAgLLqZ3hCXyFfvCKfinoaHRTeV0xfgodBw==",
+        "data_len": 297,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 2958000,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964540
+    },
+    "BPjcvQ6KfSbNQSFbGxiqQCAm67fyTbQijWi2nEidHiU1": {
+      "account": {
+        "data_base64": "Gl69u3SINSGDdC1iKvo1NjjXHf62bH+i9xQCijd4WMmrXrrcndxjAAIAAAAAAAAAA6jFA2oAAAAA/gIAAACt/Rg2zguiTTa+4vXZ/PHBmtZ4Zo/wM4QuKFgQlIspbfMCpH1/5friAgLLqZ3hCXyFfvCKfinoaHRTeV0xfgod",
+        "data_len": 550,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 4718880,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964540
+    },
+    "DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm": {
+      "account": {
+        "data_base64": "AgAAAAU0ppOsDQsJ+gkkwZTjeXrAjTJj2ErhIdEb5zO/u1+n",
+        "data_len": 36,
+        "data_saved": "full",
+        "executable": true,
+        "lamports": 1141440,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964539
+    },
+    "MKbyajiJMrASaX4nFQHr7S8AhJzcK8odwiHuHwg4u42": {
+      "account": {
+        "data_base64": "AwAAAMVsQhsAAAAAAXnbghcbR1uDdRVRGWAernbOrgCw4pr4NTSPv8DuJULA",
+        "data_len": 208277,
+        "data_saved": "header",
+        "executable": false,
+        "lamports": 1450498800,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964539
+    }
+  },
+  "captured_at_slot": 514964540,
+  "cluster": "devnet",
+  "description": "Upgradeable program whose authority is a Squads v4 vault; threshold 2 of 5 voting members, time lock 0, two approved proposals. The provider rate-limited the nonce search during capture (HTTP 429), so only two nonce answers were recorded.",
+  "program": "DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm",
+  "program_accounts": {
+    "11111111111111111111111111111111:2AK3ivn5jXcV6PGV3eQFGrBkP4Vie8uk6UPL4Qyau6Ce": {
+      "addresses": [],
+      "slot": 514964540
+    },
+    "11111111111111111111111111111111:CiBNTAkJMQ8TFsSGnhJ15yD49KAdS7vzqCnqiFdYXhat": {
+      "addresses": [],
+      "slot": 514964541
+    }
+  },
+  "signatures": {},
+  "transactions": {}
+}

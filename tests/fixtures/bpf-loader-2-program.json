@@ -1,0 +1,22 @@
+{
+  "accounts": {
+    "5qbkjpYNQ6JwVdiFose2LA6cdhn9m2TBLef6bAgPwy2": {
+      "account": {
+        "data_base64": "",
+        "data_len": 4720,
+        "data_saved": "header",
+        "executable": true,
+        "lamports": 33742080,
+        "owner": "BPFLoader2111111111111111111111111111111111"
+      },
+      "slot": 514964612
+    }
+  },
+  "captured_at_slot": 514964612,
+  "cluster": "devnet",
+  "description": "Program owned by BPFLoader2 (immutable).",
+  "program": "5qbkjpYNQ6JwVdiFose2LA6cdhn9m2TBLef6bAgPwy2",
+  "program_accounts": {},
+  "signatures": {},
+  "transactions": {}
+}

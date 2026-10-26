@@ -1,0 +1,44 @@
+{
+  "accounts": {
+    "6GeegwsBzpEZoingaTTFMmDYY8W6eYFugTk6AEiyjf76": {
+      "account": {
+        "data_base64": "AgAAAAid7ZkaYkGkOJA/KZRPu3VLjUHwxqIC+wxJ5nRNL4mC",
+        "data_len": 36,
+        "data_saved": "full",
+        "executable": true,
+        "lamports": 1141440,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964551
+    },
+    "BtyunxNyG2bD7m4GE92UjYuwVcUyFp1CaM1Np7TijhCs": {
+      "account": {
+        "data_base64": "4HR5ukShT+xEtzTyLuD4FbgaV6V2TLGyBhvLsu4PRCdwY/ehRFfxfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AgAAAC+2YX/gfnk4yR/S9tU3sgJ8Qb5CZOn+ZlAJNmkCd7MWBbbFOM+37fDHad5OD3GOlR37HInrEvm2S40udNO5AFK1AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "data_len": 198,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 2268960,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964551
+    },
+    "adwB1WPe7iQ8kL46G8nXJCMVPQrgM3HkfonFqW64YYy": {
+      "account": {
+        "data_base64": "AwAAAFPrsRwAAAAAAXDCoOJrhKA8gYziqB0I0U7TcMi8AVGkT9wSD8lyvP/C",
+        "data_len": 1495661,
+        "data_saved": "header",
+        "executable": false,
+        "lamports": 10410691440,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964551
+    }
+  },
+  "captured_at_slot": 514964551,
+  "cluster": "devnet",
+  "description": "Upgradeable program whose authority is a Squads v4 vault; threshold 1 with one voting member and time lock 0. The provider rate-limited the nonce search during capture (HTTP 429), so no nonce answer was recorded.",
+  "program": "6GeegwsBzpEZoingaTTFMmDYY8W6eYFugTk6AEiyjf76",
+  "program_accounts": {},
+  "signatures": {},
+  "transactions": {}
+}

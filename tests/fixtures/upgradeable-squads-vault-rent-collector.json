@@ -1,0 +1,86 @@
+{
+  "accounts": {
+    "9EBpFZ8EzuK2cCiqcg6YMUBtvF7z3FmrbTJehCc1SmD7": {
+      "account": {
+        "data_base64": "Gl69u3SINSGITt4KDkBUXknvFIk50yI37D8q/GJhClFkmXpAlOz3QAIAAAAAAAAABmJt22oAAAAA/wMAAABHl6Vs+0d1f3jzIgRBXcjV+Nbi61CceBZzoYfe+x7mg9MbtITe2JCc4LPYrGCkOWF1jM+KNpbmLRG034/WtbZh8TexTA/LpC2msueEhy0b7PR4ZNb4pg/aRYx+g6qnvn4AAAAAAwAAAEeXpWz7R3V/ePMiBEFdyNX41uLrUJx4FnOhh977HuaD0xu0hN7YkJzgs9isYKQ5YXWMz4o2luYtEbTfj9a1tmHxN7FMD8ukLaay54SHLRvs9Hhk1vimD9pFjH6Dqqe+fg==",
+        "data_len": 646,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 3931920,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964564
+    },
+    "AB6CTdbwLckrXKXjXPauWAdRfoHLExebuMZyWEocfoEw": {
+      "account": {
+        "data_base64": "4HR5ukShT+ylfrxrgbSQy0X9VWoFImby75jJd4/8nylkb5jq2fVX3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwCA9AMAAwAAAAAAAAAAAAAAAAAAAAGbk1u7XcA0/woIV0MAnxFlbST0RzqGVqEY0fvqIoyLJv8GAAAAGqWOShyyPBxw7p1y7SabkHu6gfesnQEsX7vyeBQxy5IDIscSfWhOkmO49unstphDKUmO73AjIJ5db3bgUcOgrQ4DR5elbPtHdX948yIEQV3I1fjW4utQnHgWc6GH3vse5oMDmSIJ2gRVW+e6sKFtfbHEY49wr0K1UtAb+g4msevPRKAE0xu0hN7YkJzgs9isYKQ5YXWMz4o2luYtEbTfj9a1tmED8TexTA/LpC2msueEhy0b7PR4ZNb4pg/aRYx+g6qnvn4D",
+        "data_len": 330,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 2326640,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964563
+    },
+    "GP2BywViKYkaoMvQtKaXw6aFW1kzDozdKEmKBKGtcnCu": {
+      "account": {
+        "data_base64": "Gl69u3SINSGITt4KDkBUXknvFIk50yI37D8q/GJhClFkmXpAlOz3QAMAAAAAAAAAA4Nw22oAAAAA/wMAAABHl6Vs+0d1f3jzIgRBXcjV+Nbi61CceBZzoYfe+x7mg9MbtITe2JCc4LPYrGCkOWF1jM+KNpbmLRG034/WtbZh8TexTA/LpC2msueEhy0b7PR4ZNb4pg/aRYx+g6qnvn4=",
+        "data_len": 646,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 3931920,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964564
+    },
+    "H6fqwrhJZP2c8YYEHbgYG7gqsC55AaCZB7XPzueZ8A7J": {
+      "account": {
+        "data_base64": "Gl69u3SINSGITt4KDkBUXknvFIk50yI37D8q/GJhClFkmXpAlOz3QAEAAAAAAAAAAwsWzmoAAAAA+AMAAABHl6Vs+0d1f3jzIgRBXcjV+Nbi61CceBZzoYfe+x7mg9MbtITe2JCc4LPYrGCkOWF1jM+KNpbmLRG034/WtbZh8TexTA/LpC2msueEhy0b7PR4ZNb4pg/aRYx+g6qnvn4=",
+        "data_len": 646,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 3931920,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964564
+    },
+    "qxBstsLvyb7Xq5JVCsPUMFmyzT18rBZp1o51jwEyiVy": {
+      "account": {
+        "data_base64": "AgAAAA6gHIOWgbAG50/mBEzFRzsghC+3lF7bTudE9sfRkOWf",
+        "data_len": 36,
+        "data_saved": "full",
+        "executable": true,
+        "lamports": 833120,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964559
+    },
+    "z6K3Vsar9dptNvH3sDCSeSHEbfssCG4x6iHncu4uRPt": {
+      "account": {
+        "data_base64": "AwAAABczbx4AAAAAAU0Zbr1gawqNv/Pf3ORT+6GINFG4UPI1BTASkJ9sfp+4",
+        "data_len": 1447589,
+        "data_saved": "header",
+        "executable": false,
+        "lamports": 7354402360,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964563
+    }
+  },
+  "captured_at_slot": 514964564,
+  "cluster": "devnet",
+  "description": "Upgradeable program whose authority is a Squads v4 vault; the multisig has a rent collector set (so later offsets shift by 32 bytes), threshold 3 of 5 voting members, a time lock of 259200 seconds, and proposals 1 (approved), 2 (cancelled) and 3 (approved) in the open range. The provider rate-limited the nonce search during capture (HTTP 429).",
+  "program": "qxBstsLvyb7Xq5JVCsPUMFmyzT18rBZp1o51jwEyiVy",
+  "program_accounts": {
+    "11111111111111111111111111111111:2o225PhyGec6vjE7ipKv4LyzyHwcJDXKgemijoRHegSd": {
+      "addresses": [],
+      "slot": 514964563
+    },
+    "11111111111111111111111111111111:3LkvVKCNj25e4WaoaPYDUv7SESNozoHmWumUHwWMvgQu": {
+      "addresses": [],
+      "slot": 514964565
+    }
+  },
+  "signatures": {},
+  "transactions": {}
+}

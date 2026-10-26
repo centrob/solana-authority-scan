@@ -1,0 +1,107 @@
+{
+  "accounts": {
+    "FRVXJtvSfyUiSyuqMfLf9UHQKPGHZ8UDSjJWHrrsTbj2": {
+      "account": {
+        "data_base64": "AwAAAPiHfhUAAAAAAQYwpAcmD+Nr1jKGMmanHYqKAFYoG25zQQFlXQcJtzmD",
+        "data_len": 681061,
+        "data_saved": "header",
+        "executable": false,
+        "lamports": 4741075440,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964575
+    },
+    "Fsd4pY3Ry82ekvoyGpeXZFeLbdnVqzDSWHxBv7w46nFw": {
+      "account": {
+        "data_base64": "AgAAANZJzpQ6OLyPlc+vIMvEz1ohKXgV8Fvrum4nk9oymMJd",
+        "data_len": 36,
+        "data_saved": "full",
+        "executable": true,
+        "lamports": 1141440,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964575
+    }
+  },
+  "captured_at_slot": 514964575,
+  "cluster": "devnet",
+  "description": "Upgradeable program whose authority is a PDA that is not a Squads v4 vault: not in the index, and none of its recent transactions calls Squads v4.",
+  "program": "Fsd4pY3Ry82ekvoyGpeXZFeLbdnVqzDSWHxBv7w46nFw",
+  "program_accounts": {},
+  "signatures": {
+    "RATvuBc9Fh9QNYrWHamc1ZypDUxFeYAv6gfhiMvXfLW": [
+      {
+        "block_time": 1739383011,
+        "failed": false,
+        "signature": "2b6PDdiesGiGEqFbx1pQHV7TR3CAq9VAADHzivpVucxn366tHc9cYtmZ9SiRnka4iojd8swVw3UxhurAyo7stfwa",
+        "slot": 360620617
+      },
+      {
+        "block_time": 1739380563,
+        "failed": false,
+        "signature": "2QRMQwtLQNLFTUb4mVuhaUszd7iqYPKHGmuHVzu4NPwzZwD8j56wpdanUJz9QShGwFcjBkCxoK2Ex6o91z8uZuyc",
+        "slot": 360614200
+      },
+      {
+        "block_time": 1739380531,
+        "failed": false,
+        "signature": "26R7Tpf4DCWfqHcdogNcnVYJTF2ChayKCEjJHXoPWcLiryGdHPNNfQvUZuKDwxVXs9JS3EUdaqw7P6N7L5L8evEC",
+        "slot": 360614117
+      },
+      {
+        "block_time": 1739380352,
+        "failed": false,
+        "signature": "3noFDJv5DpYUvn6R2zSBourT2TxueY8KMj5e128GEV9FczEhfL5cg7o2niPPqjJPqCs8a5G8qMYWmjuGQPn83PvB",
+        "slot": 360613648
+      },
+      {
+        "block_time": 1739373293,
+        "failed": false,
+        "signature": "4KNn38b2Hw7S9hvpP8xh19prXJGb877koGKuuA5BiEFuX2pEE9e4Bebg21KCrYbxj4GZR4TUXpxBHbGE3UWZDuJY",
+        "slot": 360595104
+      }
+    ]
+  },
+  "transactions": {
+    "26R7Tpf4DCWfqHcdogNcnVYJTF2ChayKCEjJHXoPWcLiryGdHPNNfQvUZuKDwxVXs9JS3EUdaqw7P6N7L5L8evEC": {
+      "block_time": 1739380531,
+      "failed": false,
+      "loaded_readonly": [],
+      "loaded_writable": [],
+      "slot": 360614117,
+      "transaction_base64": "ATav8zN05Vy9tBF1cR08P4hOYZXKAO4zl6H0RnbWghBiiavR2kHntkO7d/+s77bThFDkuWXyb7iHY7gmffDD5gkBAAIENdsiV/kOvZWS09qc227Gs+/GfwRvCHpLgYn4YQODKXvp28ZKiEl0yRivuNXzg+ID1ISeorSNof8UxHOgO+pFMQKo9pFOiKGw4hAVPvdjrisAwrk9FsEk0sBTehAEgAAABjCkByYP42vWMoYyZqcdiooAVigbbnNBAWVdBwm3OYOp/wui/FTrqBN2aFES/YdQlrJA94MxWdGqRq7PvgCyUgECAwEAAwQEAAAA"
+    },
+    "2QRMQwtLQNLFTUb4mVuhaUszd7iqYPKHGmuHVzu4NPwzZwD8j56wpdanUJz9QShGwFcjBkCxoK2Ex6o91z8uZuyc": {
+      "block_time": 1739380563,
+      "failed": false,
+      "loaded_readonly": [],
+      "loaded_writable": [],
+      "slot": 360614200,
+      "transaction_base64": "AUY2oTo+S1CBWC8xIks0AzIaNGq9oH3Bu9j0LFeDfGDiKCz8KauCm7kAoN6V+Za7XrIm3XW+vkdJDj/CjEB20AMBAAIENdsiV/kOvZWS09qc227Gs+/GfwRvCHpLgYn4YQODKXvWSc6UOji8j5XPryDLxM9aISl4FfBb67puJ5PaMpjCXQKo9pFOiKGw4hAVPvdjrisAwrk9FsEk0sBTehAEgAAABjCkByYP42vWMoYyZqcdiooAVigbbnNBAWVdBwm3OYNyrRbqXM5KqDJpeejaRlAKUTN5Cm3pfss00k58aHcPnQECAwEAAwQEAAAA"
+    },
+    "2b6PDdiesGiGEqFbx1pQHV7TR3CAq9VAADHzivpVucxn366tHc9cYtmZ9SiRnka4iojd8swVw3UxhurAyo7stfwa": {
+      "block_time": 1739383011,
+      "failed": false,
+      "loaded_readonly": [],
+      "loaded_writable": [],
+      "slot": 360620617,
+      "transaction_base64": "AU9q1x0j1YJXtF3A0zDJSCXY0Evvc+mPdvBp5GXDnrDY4UxIt8WYuBAOXV+mF/Qd0M+mEqnUOsOAxHBFk6EBcw0BAAIENdsiV/kOvZWS09qc227Gs+/GfwRvCHpLgYn4YQODKXuGJdVz11mGj7hJkDC1RaeEexGLDoD4OJThseGNWQxaYQKo9pFOiKGw4hAVPvdjrisAwrk9FsEk0sBTehAEgAAABjCkByYP42vWMoYyZqcdiooAVigbbnNBAWVdBwm3OYPy5YPnvFbZL8+QsdMORkRSS4r29upmRLwPA1JesGrwzAECAwEAAwQEAAAA"
+    },
+    "3noFDJv5DpYUvn6R2zSBourT2TxueY8KMj5e128GEV9FczEhfL5cg7o2niPPqjJPqCs8a5G8qMYWmjuGQPn83PvB": {
+      "block_time": 1739380352,
+      "failed": false,
+      "loaded_readonly": [],
+      "loaded_writable": [],
+      "slot": 360613648,
+      "transaction_base64": "AYuHIsP+70HAqW21vBTL7EmH3Omwbk7msvtSvNDF52aJ+TwPZyRhu8D3SxnZ6nGp/xBuPN9/r/aFPaKuDC/YFAQBAAIENdsiV/kOvZWS09qc227Gs+/GfwRvCHpLgYn4YQODKXsw2Dm8tGxTpZgd8I177tIytHWUGxOXj7LKyJqnI/PjPwKo9pFOiKGw4hAVPvdjrisAwrk9FsEk0sBTehAEgAAABjCkByYP42vWMoYyZqcdiooAVigbbnNBAWVdBwm3OYOX2yOZ9+DxXEgE+P70OvNP9y8Aok+ZVUD3W4dGVg9EfAECAwEAAwQEAAAA"
+    },
+    "4KNn38b2Hw7S9hvpP8xh19prXJGb877koGKuuA5BiEFuX2pEE9e4Bebg21KCrYbxj4GZR4TUXpxBHbGE3UWZDuJY": {
+      "block_time": 1739373293,
+      "failed": false,
+      "loaded_readonly": [],
+      "loaded_writable": [],
+      "slot": 360595104,
+      "transaction_base64": "AaXltOb6FPiAX1Ffh81EHsrFLEotdCiym5dubEOt55IrpkXOeo67FQRp30sj52ywW9HWKH2cuEjtn1lf9kwX1wkBAAMG9+2QOAyjHEvdrEvEr2eoig/+a/Mp4l+xOPh/AmJat+v5NcQSBTRW9XQfFhwIUF60vOMoneVBrctsinkYAis4ggYwpAcmD+Nr1jKGMmanHYqKAFYoG25zQQFlXQcJtzmDAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAAGfpHdznHAx18//7oe1iyvQARvHdjDUog7EKh9tzrZMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFrMsdHeHMmQXW2IK1wC27XvP3ZFw87Np+1rGVj6yq0YDAwAJA6CGAQAAAAAABAMBAAWAARgeyCgFHAd3AQBOQZdp3I3c/VmBe3MMEBkl76UM5kLGjTPpKyIW0+PDEgEAAAD37ZA4DKMcS92sS8SvZ6iKD/5r8yniX7E4+H8CYlq36y4AAAB7Im5hbWUiOiJUZXN0aW5nIiwiZGVzY3JpcHRpb24iOiIiLCJpbWFnZSI6IiJ9BQIAAgwCAAAAQEIPAAAAAAA="
+    }
+  }
+}

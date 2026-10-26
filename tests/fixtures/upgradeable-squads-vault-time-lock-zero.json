@@ -1,0 +1,94 @@
+{
+  "accounts": {
+    "4km55apD4cYTL9nSXXpV4qdaDvMy6e3HYKtbN4BDMzFu": {
+      "account": {
+        "data_base64": "Gl69u3SINSGont58SG5tGiRlhPVQsa2oR+VSa75i2WVwS8u+iROWeggAAAAAAAAABctvRmoAAAAA/gIAAABQseLC65KfHIM45MdHKC7yF7q8VHyNk6V2UjQIX010uf7JeDKOp6ft+At51ZjfAWJssuYwmUk48OpV1yOZEvvK",
+        "data_len": 454,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 4050720,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964509
+    },
+    "7RZJzZiWspc2p7ZHKgs4vEXnQNQH8uZfXRqGVkiEXE24": {
+      "account": {
+        "data_base64": "Gl69u3SINSGont58SG5tGiRlhPVQsa2oR+VSa75i2WVwS8u+iROWegcAAAAAAAAAAVhkRmoAAAAA/QEAAABQseLC65KfHIM45MdHKC7yF7q8VHyNk6V2UjQIX010uQ==",
+        "data_len": 454,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 4050720,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964509
+    },
+    "CMDzskwKTSuLAUmAXHQuAbik74tqRA4oVY2cL9NvnwqB": {
+      "account": {
+        "data_base64": "4HR5ukShT+yIjUZ0ooRs+hTwLyjEICnEyasI3YoPtWs7jZ3hYKEXaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAACQAAAAAAAAAGAAAAAAAAAAD/BAAAAFCx4sLrkp8cgzjkx0coLvIXurxUfI2TpXZSNAhfTXS5B1Qx+GYhvoTD7GS1yh7RhhspfnoLYSZawJVDgKa7vcyzBZDd3xHzRCn99u0o4Qmresn/gs6y/+Nw0MrUH9nE/68wB/7JeDKOp6ft+At51ZjfAWJssuYwmUk48OpV1yOZEvvKB/7JeDKOp6ft+At51ZjfAWJssuYwmUk48OpV1yOZEvvKBw==",
+        "data_len": 594,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 5025120,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964509
+    },
+    "FAUFLTRtRLSbcpdUkiMxr4Yf46cTQL9aikSDQoVCrnTH": {
+      "account": {
+        "data_base64": "Gl69u3SINSGont58SG5tGiRlhPVQsa2oR+VSa75i2WVwS8u+iROWegkAAAAAAAAABVp/RmoAAAAA/wIAAABQseLC65KfHIM45MdHKC7yF7q8VHyNk6V2UjQIX010uZDd3xHzRCn99u0o4Qmresn/gs6y/+Nw0MrUH9nE/68w",
+        "data_len": 454,
+        "data_saved": "full",
+        "executable": false,
+        "lamports": 4050720,
+        "owner": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+      },
+      "slot": 514964509
+    },
+    "GCos6gFJcdiY6KuBa93fvmnFEXoosMgKnY3u7GpgS6jN": {
+      "account": {
+        "data_base64": "AgAAAA54yiVpMKBdZCfZpSB7GJQH7yePT8WF1JAUzprLWhy6",
+        "data_len": 36,
+        "data_saved": "full",
+        "executable": true,
+        "lamports": 1141440,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964509
+    },
+    "yVY1qmeSLT8jWQbKk2iHnwbJBXs2yB6QdSSd3G6XZ2Z": {
+      "account": {
+        "data_base64": "AwAAAAqVOBwAAAAAAQM50+lHC8WXH2k1jdRVawT2h2/CrH7m1cbs8ebgaZ4U",
+        "data_len": 341429,
+        "data_saved": "header",
+        "executable": false,
+        "lamports": 2377236720,
+        "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+      },
+      "slot": 514964509
+    }
+  },
+  "captured_at_slot": 514964509,
+  "cluster": "devnet",
+  "description": "Upgradeable program whose authority is a Squads v4 vault; the multisig has threshold 2 of 4 members, time lock 0, and proposals 7 to 9 in the open range.",
+  "program": "GCos6gFJcdiY6KuBa93fvmnFEXoosMgKnY3u7GpgS6jN",
+  "program_accounts": {
+    "11111111111111111111111111111111:6RzwTW6CY54dHcfGEygFSgLwCdBP3s7fh3UbEAaL89kt": {
+      "addresses": [],
+      "slot": 514964509
+    },
+    "11111111111111111111111111111111:6ffSZCXFiHwB5yXHERqLj6aft7RwuV6Xc1hwAc1ibPGN": {
+      "addresses": [],
+      "slot": 514964511
+    },
+    "11111111111111111111111111111111:AkVw6QEuv1Eikny9khDBXoAnY73mQcMEx9sHbXdELqWP": {
+      "addresses": [],
+      "slot": 514964513
+    },
+    "11111111111111111111111111111111:J9ajgZRWNN9DGTixdS4ZvEQcmabEhXNLemuMuLU5PWVF": {
+      "addresses": [],
+      "slot": 514964515
+    }
+  },
+  "signatures": {},
+  "transactions": {}
+}
