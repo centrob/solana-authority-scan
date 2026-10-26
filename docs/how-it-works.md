@@ -43,7 +43,8 @@ cannot see. For the output files, see [output-formats.md](output-formats.md).
   addresses; a signatures limit is 1 to 1000.
 - Server text is untrusted: every address, hash and signature in a response must decode
   to its exact length, numbers must fit their type, and a JSON-RPC error message is
-  sanitised (control characters escaped, at most 200 characters).
+  sanitised (control characters escaped, backslashes doubled so a typed `\n` is told
+  apart from a real one, at most 200 characters).
 - `HttpRpc::connect(url, cluster)` calls `getGenesisHash` first and refuses an endpoint
   on another cluster. There is no other way to make an `HttpRpc`.
 - The URL comes only from the environment (`SOLANA_<CLUSTER>_RPC_URL`), must start with

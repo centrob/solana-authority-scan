@@ -94,7 +94,11 @@ pub fn instruction_accounts(
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::indexing_slicing, reason = "tests index known-length data")]
+    #![allow(
+        clippy::indexing_slicing,
+        clippy::arithmetic_side_effects,
+        reason = "tests index known-length data and step a test-only generator"
+    )]
 
     use super::*;
 
@@ -156,5 +160,40 @@ mod tests {
         assert_eq!(compact_u16(&mut r, "n"), Ok(0xffff));
         let mut r = Reader::new(&[0x80, 0x80, 0x80, 0x01], "T");
         assert!(compact_u16(&mut r, "n").is_err());
+    }
+
+    /// Every prefix of a valid transaction is refused, never a panic.
+    #[test]
+    fn refuses_every_truncation() {
+        let keys: Vec<Address> = (0..3).map(|i| Address::new([i; 32])).collect();
+        let tx = legacy_transaction(&keys, &[(2, vec![0, 1]), (1, vec![2])]);
+        let none = LoadedAddresses::default();
+        assert!(instruction_accounts(&tx, &none, &keys[2]).is_ok());
+        for end in 0..tx.len() {
+            let error = instruction_accounts(&tx[..end], &none, &keys[2]).unwrap_err();
+            assert_eq!(error.reason, Reason::TooShort, "at {end}: {error}");
+            assert_eq!(error.account, ACCOUNT);
+        }
+    }
+
+    /// Property: random bytes never panic, and whatever is found fits in the input.
+    #[test]
+    fn random_bytes_never_panic() {
+        let mut seed = 0x2545_f491_4f6c_dd1d_u64;
+        let mut next = move || {
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            seed
+        };
+        for _ in 0..20_000 {
+            let len = usize::try_from(next() % 300).unwrap();
+            let bytes: Vec<u8> = (0..len).map(|_| next().to_le_bytes()[0]).collect();
+            let program = Address::new([0; 32]);
+            if let Ok(found) = instruction_accounts(&bytes, &LoadedAddresses::default(), &program) {
+                let accounts: usize = found.iter().map(Vec::len).sum();
+                assert!(accounts <= bytes.len());
+            }
+        }
     }
 }

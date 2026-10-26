@@ -200,13 +200,15 @@ pub trait Rpc {
 }
 
 /// Server text made safe to print: at most `MAX_SERVER_TEXT` characters, each control
-/// or non-printable character escaped (`\n`, `\u{1b}`), and `...` when cut short.
+/// or non-printable character escaped (`\n`, `\u{1b}`), and `...` when cut short. A
+/// backslash is doubled, so text that spells out an escape (a typed `\n`) never looks
+/// like an escaped control character.
 pub fn sanitise(text: &str) -> String {
     let mut out = String::with_capacity(text.len().min(MAX_SERVER_TEXT));
     let mut chars = text.chars();
     for c in chars.by_ref().take(MAX_SERVER_TEXT) {
         match c {
-            '\\' | '"' | '\'' => out.push(c),
+            '"' | '\'' => out.push(c),
             _ => out.extend(c.escape_debug()),
         }
     }
@@ -222,7 +224,11 @@ mod tests {
 
     #[test]
     fn sanitise_escapes_control_text_and_caps_length() {
-        assert_eq!(sanitise("plain \"text\" \\ ok"), "plain \"text\" \\ ok");
+        assert_eq!(sanitise("plain \"text\" ok"), "plain \"text\" ok");
+        // A typed escape and the control character it names come out different.
+        assert_eq!(sanitise("a\\nb"), "a\\\\nb");
+        assert_eq!(sanitise("a\nb"), "a\\nb");
+        assert_eq!(sanitise("\\u{202e}"), "\\\\u{202e}");
         assert_eq!(sanitise("a\r\n\tb\u{7}"), "a\\r\\n\\tb\\u{7}");
         assert_eq!(sanitise("x\u{202e}y"), "x\\u{202e}y");
         let long = "a".repeat(MAX_SERVER_TEXT + 1);

@@ -11,7 +11,9 @@
 //!   could build a method name the literal check cannot see;
 //! - `ureq` is named outside `read/http.rs`;
 //! - `HttpRpc` has any `impl` beyond its own and `Rpc`, or a public inherent method
-//!   other than `connect`.
+//!   other than `connect`;
+//! - `RpcUrl` has a public method beyond `from_env` and `redacted`, so a URL can come
+//!   only from the environment.
 //!
 //! Each rule is an allowlist: the crate passes only if what it sends is one of the six
 //! reads. The scanner's own tests below plant each evasion and check it is caught.
@@ -46,6 +48,9 @@ const METHODS: [&str; 6] = [
     "getSignaturesForAddress",
     "getTransaction",
 ];
+
+/// `RpcUrl`'s public methods, exactly: a URL comes only from the environment.
+const URL_PUBLIC: [&str; 2] = ["from_env", "redacted"];
 
 /// Prefixes of JSON-RPC method names. A literal that starts with one of these and then
 /// a capital letter is treated as a method name.
@@ -334,6 +339,13 @@ fn violations(files: &[(String, String)]) -> Vec<String> {
                         }
                     }
                 }
+                if header.len() == 2 && word(header.get(1), "RpcUrl") {
+                    let close = closing_brace(&toks, end);
+                    let public = fn_names(&toks[end..close.min(toks.len())], true);
+                    if public != URL_PUBLIC {
+                        found.push(format!("RpcUrl's public methods are {public:?}"));
+                    }
+                }
             }
         }
 
@@ -428,7 +440,7 @@ fn sources() -> Vec<(String, String)> {
 fn the_crate_sends_only_the_six_reads() {
     let files = sources();
     assert!(files.len() >= 10, "only {} source files found", files.len());
-    for required in ["read/json.rs", "read/rpc.rs", "read/http.rs"] {
+    for required in ["read/json.rs", "read/rpc.rs", "read/http.rs", "read/url.rs"] {
         assert!(files.iter().any(|(n, _)| n == required), "no {required}");
     }
     let found = violations(&files);
@@ -451,6 +463,23 @@ fn the_json_method_names_are_the_six_reads() {
 }
 
 // The scanner's own tests: each plants one evasion into the real sources.
+
+#[test]
+fn the_scanner_sees_another_way_to_make_a_url_or_a_client() {
+    let url = edited(
+        "read/url.rs",
+        "    pub fn redacted(&self)",
+        "    pub fn parse(text: &str) -> Self { todo!() }\n\n    pub fn redacted(&self)",
+    );
+    assert_eq!(url.len(), 1, "{url:?}");
+    let client = edited(
+        "read/http.rs",
+        "    fn unchecked(url: RpcUrl)",
+        "    pub fn connect_unchecked(url: RpcUrl) -> Self { Self::unchecked(url) }\n\n    \
+         fn unchecked(url: RpcUrl)",
+    );
+    assert_eq!(client.len(), 1, "{client:?}");
+}
 
 fn planted(file: &str, text: &str) -> Vec<String> {
     let mut files = sources();
