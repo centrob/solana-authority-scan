@@ -14,6 +14,9 @@
 //! Read-only: every chain read goes through [`read::Rpc`], which has no method that
 //! signs or sends. Layouts and limits: `docs/how-it-works.md`.
 
+/// This crate's version, as published (the `version` in `Cargo.toml`).
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub mod bytes;
 pub mod candidate;
 pub mod facts;

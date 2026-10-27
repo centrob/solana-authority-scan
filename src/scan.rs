@@ -354,7 +354,7 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
             });
         let (indexes, stale_not_read) =
             squads::stale_proposal_indexes(&multisig, self.options.stale_window);
-        let stale_approved = self
+        let mut stale_approved = self
             .read_proposals(
                 address,
                 &indexes,
@@ -368,6 +368,18 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
                 });
                 Vec::new()
             });
+        let not_read = self.read_transaction_kinds(address, &mut stale_approved);
+        if !not_read.is_empty() {
+            facts.not_possible.push(NotPossible {
+                search: search::STALE_TRANSACTIONS,
+                reason: format!(
+                    "the transaction account of each stale approved proposal must be read \
+                     to tell a vault transaction or batch (still executable) from a config \
+                     transaction (not executable); not read: {}",
+                    not_read.join("; ")
+                ),
+            });
+        }
         Ok(MultisigFacts {
             address: *address,
             read_at_slot: read.slot,
@@ -378,6 +390,77 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
             stale_not_read,
             undecodable_proposals: undecodable,
         })
+    }
+
+    /// Reads the transaction account of each stale approved proposal and records its
+    /// kind (`docs/how-it-works.md`, "Proposals": Squads v4 executes a stale approved
+    /// vault transaction or batch, never a stale config transaction). An account that
+    /// is missing, not owned by Squads v4, undecodable, or for another multisig or
+    /// index keeps `None`, and is returned as `#<index>: <why>`: the caller reports
+    /// it as not read, never as a finding and never as fine.
+    fn read_transaction_kinds(
+        &self,
+        multisig: &Address,
+        stale: &mut [OpenProposal],
+    ) -> Vec<String> {
+        let mut not_read = Vec::new();
+        for chunk in stale.chunks_mut(MULTIPLE_ACCOUNTS_CHUNK) {
+            let keys =
+                match chunk
+                    .iter()
+                    .map(|p| squads::transaction_address(multisig, p.transaction_index))
+                    .collect::<Result<Vec<_>, _>>()
+                {
+                    Ok(keys) => keys,
+                    Err(e) => {
+                        not_read.extend(chunk.iter().map(|p| {
+                            format!("#{}: deriving its address: {e}", p.transaction_index)
+                        }));
+                        continue;
+                    }
+                };
+            let accounts = match self.rpc.get_multiple_accounts(&keys) {
+                Ok(read) if read.value.len() == chunk.len() => read.value,
+                Ok(_) => {
+                    not_read.extend(chunk.iter().map(|p| {
+                        format!(
+                            "#{}: the RPC answered a different number of accounts",
+                            p.transaction_index
+                        )
+                    }));
+                    continue;
+                }
+                Err(e) => {
+                    not_read.extend(
+                        chunk
+                            .iter()
+                            .map(|p| format!("#{}: reading it: {e}", p.transaction_index)),
+                    );
+                    continue;
+                }
+            };
+            for ((proposal, key), account) in chunk.iter_mut().zip(&keys).zip(accounts) {
+                let index = proposal.transaction_index;
+                let kind = match account {
+                    None => Err(format!("no account at {key}")),
+                    Some(a) if a.owner != squads::PROGRAM_ID => {
+                        Err(format!("{key} is not owned by Squads v4"))
+                    }
+                    Some(a) => match squads::decode_transaction_header(&a.data) {
+                        Err(e) => Err(e.to_string()),
+                        Ok(h) if h.multisig != *multisig || h.index != index => Err(format!(
+                            "{key} is for another multisig or transaction index"
+                        )),
+                        Ok(h) => Ok(h.kind),
+                    },
+                };
+                match kind {
+                    Ok(kind) => proposal.transaction_kind = Some(kind),
+                    Err(why) => not_read.push(format!("#{index}: {why}")),
+                }
+            }
+        }
+        not_read
     }
 
     /// Reads the proposals at `indexes` and keeps those of `multisig` whose status
@@ -429,6 +512,7 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
                         address: *address,
                         status: proposal.status,
                         approvals: proposal.approved.len(),
+                        transaction_kind: None,
                     });
                 }
             }

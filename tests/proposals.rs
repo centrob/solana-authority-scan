@@ -11,7 +11,7 @@
 
 mod common;
 
-use common::{Replay, proposal_bytes, squads_account};
+use common::{Replay, TxKind, proposal_bytes, squads_account, transaction_bytes, transaction_pda};
 use solana_authority_scan::facts::{Authority, FoundBy, ProgramFacts, search};
 use solana_authority_scan::loader::{self, loader_name};
 use solana_authority_scan::read::Address;
@@ -153,6 +153,10 @@ fn an_approved_proposal_at_or_below_the_stale_index_is_still_executable() {
     put_proposal(&mut rpc, &multisig, 4, proposal_bytes(&multisig, 4, 5));
     put_proposal(&mut rpc, &multisig, 3, proposal_bytes(&multisig, 3, 4));
     put_proposal(&mut rpc, &multisig, 2, proposal_bytes(&multisig, 2, 1));
+    for i in [3, 5] {
+        let data = transaction_bytes(TxKind::Vault, &multisig, i);
+        rpc.insert(transaction_pda(&multisig, i), 1, Some(squads_account(data)));
+    }
     let r = scan(&rpc);
     let m = r.facts.multisig.as_ref().unwrap();
     let stale: Vec<(u64, &str)> = m
@@ -171,7 +175,13 @@ fn an_approved_proposal_at_or_below_the_stale_index_is_still_executable() {
             rules::MULTISIG_OPEN_PROPOSALS.id
         ]
     );
-    assert!(r.matches[0].evidence.ends_with("#3 executing, #5 approved"));
+    assert!(
+        r.matches[0]
+            .evidence
+            .ends_with("#3 executing vault-transaction, #5 approved vault-transaction"),
+        "{}",
+        r.matches[0].evidence
+    );
 }
 
 #[test]

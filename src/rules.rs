@@ -97,9 +97,15 @@ pub const APPROVED_PROPOSAL_STILL_EXECUTABLE: Rule = Rule {
     severity: Severity::High,
     title: "An approved proposal is still executable",
     explanation: "A proposal at or below the multisig's stale transaction index is still \
-        approved. Squads v4 marks such transactions stale, but an approved vault \
-        transaction can still be executed, by any member with the execute permission, \
-        long after the members who approved it expected it to be used or forgotten.",
+        approved, and its transaction is a vault transaction or a batch. Squads v4 marks \
+        such transactions stale but still executes an approved vault transaction or batch \
+        (it refuses a stale config transaction, which this rule does not match), so any \
+        member with the execute permission can run it long after the members who \
+        approved it expected it to be used or forgotten. Executable means the Squads \
+        program would accept the execute instruction; whether the inner instructions \
+        would succeed today (for example, an upgrade whose buffer has since changed) is \
+        not checked. A proposal in the deprecated executing status also matches, although \
+        the current Squads v4 program executes only approved proposals.",
     recommendation: "Review each approved proposal listed. Execute it if it is still \
         wanted; otherwise cancel it so it cannot be executed later.",
     weakness: true,
@@ -182,12 +188,25 @@ pub fn evaluate(facts: &ProgramFacts) -> Vec<Match> {
                 evidence: format!("multisig {} time lock 0 seconds", m.address),
             });
         }
-        if !m.stale_approved.is_empty() {
-            let list: Vec<String> = m
-                .stale_approved
-                .iter()
-                .map(|p| format!("#{} {}", p.transaction_index, p.status.name()))
-                .collect();
+        // Only vault transactions and batches: Squads v4 refuses a stale config
+        // transaction (`docs/how-it-works.md`, "Proposals"). One whose transaction was
+        // not read is listed as not read by the scan, not matched here.
+        let list: Vec<String> = m
+            .stale_approved
+            .iter()
+            .filter(|p| p.executable_when_stale())
+            .filter_map(|p| {
+                p.transaction_kind.map(|kind| {
+                    format!(
+                        "#{} {} {}",
+                        p.transaction_index,
+                        p.status.name(),
+                        kind.name()
+                    )
+                })
+            })
+            .collect();
+        if !list.is_empty() {
             out.push(Match {
                 rule: &APPROVED_PROPOSAL_STILL_EXECUTABLE,
                 evidence: format!(
@@ -237,7 +256,7 @@ mod tests {
 
     use super::*;
     use crate::facts::{FoundBy, MultisigFacts, OpenProposal};
-    use crate::squads::{Member, Multisig, Permissions, ProposalStatus};
+    use crate::squads::{Member, Multisig, Permissions, ProposalStatus, TransactionKind};
 
     fn multisig(threshold: u16, voters: u8, time_lock: u32) -> Multisig {
         Multisig {
@@ -348,8 +367,7 @@ mod tests {
         );
     }
 
-    #[test]
-    fn an_approved_stale_proposal_is_still_executable() {
+    fn with_stale(kind: Option<TransactionKind>) -> ProgramFacts {
         let mut f = facts_with(multisig(2, 3, 60));
         if let Some(m) = f.multisig.as_mut() {
             m.multisig.stale_transaction_index = 6;
@@ -358,17 +376,35 @@ mod tests {
                 address: Address::new([6; 32]),
                 status: ProposalStatus::Approved(0),
                 approvals: 2,
+                transaction_kind: kind,
             });
         }
-        let matched = evaluate(&f);
-        assert_eq!(matched.len(), 1);
-        assert_eq!(matched[0].rule, &APPROVED_PROPOSAL_STILL_EXECUTABLE);
-        assert_eq!(matched[0].rule.severity, Severity::High);
-        assert!(
-            matched[0].evidence.ends_with("#5 approved"),
-            "{}",
-            matched[0].evidence
-        );
+        f
+    }
+
+    #[test]
+    fn an_approved_stale_vault_transaction_or_batch_is_still_executable() {
+        for (kind, name) in [
+            (TransactionKind::Vault, "vault-transaction"),
+            (TransactionKind::Batch, "batch"),
+        ] {
+            let matched = evaluate(&with_stale(Some(kind)));
+            assert_eq!(matched.len(), 1);
+            assert_eq!(matched[0].rule, &APPROVED_PROPOSAL_STILL_EXECUTABLE);
+            assert_eq!(matched[0].rule.severity, Severity::High);
+            let end = format!("#5 approved {name}");
+            assert!(
+                matched[0].evidence.ends_with(&end),
+                "{}",
+                matched[0].evidence
+            );
+        }
+    }
+
+    #[test]
+    fn a_stale_config_transaction_or_one_not_read_matches_nothing() {
+        assert!(ids(&with_stale(Some(TransactionKind::Config))).is_empty());
+        assert!(ids(&with_stale(None)).is_empty());
     }
 
     #[test]
@@ -387,6 +423,7 @@ mod tests {
                 address: Address::new([6; 32]),
                 status: ProposalStatus::Approved(0),
                 approvals: 2,
+                transaction_kind: None,
             });
         }
         let matched = evaluate(&f);

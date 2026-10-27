@@ -1,6 +1,6 @@
 [package]
 name = "solana-authority-scan"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.98"
 description = "Who can change a Solana program, and how fast: upgrade authority, Squads v4 multisig settings and proposals, from public chain data. Read-only; holds no keys"
@@ -13,6 +13,8 @@ include = [
   "/src/**/*.rs",
   "/docs/*.md",
   "/tests/fixtures/rpc/*.json",
+  # The no-sending check, so the published package carries it and it runs from there.
+  "/tests/no_sending.rs",
   "/Cargo.toml",
   "/Cargo.lock",
   "/README.md",

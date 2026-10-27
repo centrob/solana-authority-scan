@@ -56,7 +56,7 @@ This prints a Markdown report. An excerpt:
 ```text
 # Solana authority scan
 
-Cluster: devnet. Tool: solana-authority-scan 0.1.0. Schema: solana-authority-scan/report v1.
+Cluster: devnet. Tool: solana-authority-scan 0.1.1. Schema: solana-authority-scan/report v1.
 
 Squads v4 index: 19313 multisigs at slot 515444879, vaults 0 to 3.
 
@@ -149,11 +149,25 @@ fallback search; set `XDG_CACHE_HOME` to a directory outside it.)
 | `single-key-upgrade-authority` | high | The upgrade authority is on the ed25519 curve (upgradeable or loader-v4): one key can replace the code |
 | `multisig-threshold-below-two` | high | Threshold below 2 |
 | `multisig-config-authority-set` | high | A config authority can change members, threshold and time lock without a vote |
-| `approved-proposal-still-executable` | high | An approved or executing proposal at or below the stale transaction index (Squads v4 can still execute an approved vault transaction after it is marked stale) |
+| `approved-proposal-still-executable` | high | An approved or executing proposal at or below the stale transaction index whose transaction is a vault transaction or a batch (Squads v4 still executes those after they are marked stale; it refuses a stale config transaction, which does not match). Limits below |
 | `multisig-time-lock-zero` | medium | Time lock 0 |
 | `multisig-threshold-below-half` | medium | Threshold of at least 2 but less than half of the members with the vote permission (2 of 5 matches, 2 of 4 does not) |
 | `multisig-open-proposals` | low | Any draft, active, approved or executing proposal after the stale transaction index |
 | `upgrade-authority-unknown-pda` | info | The authority is off the curve but not a Squads v4 vault this scan found: review by hand. Not a weakness on its own |
+
+For `approved-proposal-still-executable`, the scanner reads each stale approved
+proposal's transaction account and decodes its type. If that account is missing or
+does not decode, the proposal is listed as not read (`stale-transaction-kinds`) and the
+scan says "scan incomplete"; it is never a finding and never counted as fine. Known
+limits of this rule:
+
+- "Executable" means the Squads v4 program would accept the execute instruction, not
+  that the inner instructions would succeed today. For example, a stale approved
+  upgrade whose buffer is no longer owned by the vault still matches, though it would
+  fail if executed.
+- A proposal in the deprecated `executing` status still matches when its transaction
+  is a vault transaction or batch, although the current Squads v4 program executes only
+  `approved` proposals: a smaller, known false positive.
 
 Loaders decoded: BPF Upgradeable Loader, BPFLoader2 and the older BPFLoader (immutable),
 loader v4, and the native loader. Squads v4 accounts follow `@sqds/multisig` 2.1.4.

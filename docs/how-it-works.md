@@ -79,8 +79,11 @@ cannot see. For the output files, see [output-formats.md](output-formats.md).
     5 executed, 6 cancelled, with timestamps), bump, then the approved, rejected and
     cancelled key lists. Open means draft, active, approved or executing. Executable
     means approved or executing.
+  - Transaction accounts (`VaultTransaction`, `ConfigTransaction`, `Batch`): only the
+    discriminator and the shared header are read: multisig, creator, index u64.
   - Vault PDA seeds: `"multisig"`, multisig, `"vault"`, index u8. Proposal PDA seeds:
     `"multisig"`, multisig, `"transaction"`, index u64 little-endian, `"proposal"`.
+    Transaction PDA seeds: the same without `"proposal"`.
 - A `Vec` length is refused if its items cannot fit in the bytes left, so a forged
   length cannot force a large allocation.
 
@@ -104,12 +107,34 @@ cannot see. For the output files, see [output-formats.md](output-formats.md).
 - Open range: `stale_transaction_index + 1` to `transaction_index`, the newest 500.
   Kept: open proposals.
 - Stale window: the newest `--stale-window` indexes at or below
-  `stale_transaction_index`. Kept: approved and executing proposals, because Squads v4
-  can still execute an approved vault transaction after it is marked stale.
+  `stale_transaction_index`. Kept: approved and executing proposals.
 - Both are read with `getMultipleAccounts`, at most 100 addresses a call. A missing
   account, an account Squads v4 does not own, and a proposal for another multisig or
   another index are skipped. A proposal that does not decode is listed with its error,
   and the other proposals are still read.
+- For each kept stale proposal, the transaction account at the transaction PDA is read
+  (`getMultipleAccounts` again) and its discriminator decoded. Only a vault transaction
+  or a batch matches `approved-proposal-still-executable`. In the Squads v4 program
+  source (github.com/Squads-Protocol/v4, commit `af94153ff77a28b6effe46b9c94baaa93742b48c`,
+  under `programs/squads_multisig_program/src/`):
+  - `instructions/config_transaction_execute.rs`, lines 89 to 93: "Stale config
+    transaction proposals CANNOT be executed even if approved", enforced with
+    `require!(proposal.transaction_index > multisig.stale_transaction_index,
+    MultisigError::StaleProposal)`.
+  - `instructions/vault_transaction_execute.rs`, lines 77 and 78, and
+    `instructions/batch_execute_transaction.rs`, lines 95 and 96: stale vault
+    transaction and batch proposals "CAN be executed if they were approved before
+    becoming stale, hence no check for staleness here".
+- A transaction account that is missing, not owned by Squads v4, undecodable, or for
+  another multisig or index, or a read that fails, is listed under
+  `stale-transaction-kinds` as not read, and the scan is incomplete. It is never a
+  finding and never counted as fine.
+- Limits. "Executable" means the Squads v4 program would accept the execute
+  instruction, not that the inner instructions would succeed today (an upgrade whose
+  buffer is no longer owned by the vault still matches). All three execute
+  instructions accept only the `approved` status; a stale proposal in the deprecated
+  `executing` status with a vault transaction or batch still matches, a smaller known
+  false positive.
 
 ## Nonces
 

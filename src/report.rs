@@ -132,6 +132,26 @@ fn proposals_json(list: &[OpenProposal]) -> Vec<Value> {
         .collect()
 }
 
+/// The stale approved proposals: the same shape, plus `transaction_kind` (added in
+/// version 1 of the schema, 0.1.1): `vault-transaction`, `config-transaction`,
+/// `batch`, or null when the transaction account was not read.
+fn stale_proposals_json(list: &[OpenProposal]) -> Vec<Value> {
+    proposals_json(list)
+        .into_iter()
+        .zip(list)
+        .map(|(mut v, p)| {
+            if let Value::Object(map) = &mut v {
+                map.insert(
+                    "transaction_kind".to_owned(),
+                    p.transaction_kind
+                        .map_or(Value::Null, |k| Value::from(k.name())),
+                );
+            }
+            v
+        })
+        .collect()
+}
+
 fn authority_json(authority: Option<&Authority>) -> Value {
     let Some(authority) = authority else {
         return Value::Null;
@@ -177,7 +197,7 @@ fn multisig_json(m: &MultisigFacts) -> Value {
         })).collect::<Vec<_>>(),
         "open_proposals": proposals_json(&m.open_proposals),
         "proposals_not_read": m.proposals_not_read,
-        "stale_approved_proposals": proposals_json(&m.stale_approved),
+        "stale_approved_proposals": stale_proposals_json(&m.stale_approved),
         "stale_proposals_not_read": m.stale_not_read,
         "undecodable_proposals": m.undecodable_proposals.iter().map(|u| json!({
             "transaction_index": u.transaction_index,
@@ -353,8 +373,13 @@ pub fn to_markdown(ctx: &RunContext, results: &[ProgramResult]) -> String {
                 } else {
                     String::new()
                 };
+                let executable = m
+                    .stale_approved
+                    .iter()
+                    .filter(|p| p.executable_when_stale())
+                    .count();
                 s.push_str(&format!(
-                    "| Approved at or below the stale index | {} (read #{first} to #{stale}{older}) |\n",
+                    "| Approved at or below the stale index | {} ({executable} a vault transaction or batch; read #{first} to #{stale}{older}) |\n",
                     m.stale_approved.len()
                 ));
             }

@@ -4,7 +4,7 @@
 use crate::read::Address;
 
 use crate::loader::V4Status;
-use crate::squads::{Multisig, ProposalStatus};
+use crate::squads::{Multisig, ProposalStatus, TransactionKind};
 
 /// How a vault PDA was tied to its multisig.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -93,6 +93,23 @@ pub struct OpenProposal {
     pub address: Address,
     pub status: ProposalStatus,
     pub approvals: usize,
+    /// The kind of the proposal's transaction account. Read only for approved
+    /// proposals at or below the stale index; `None` when it was not read (always for
+    /// open proposals, and for a stale one whose account was missing or undecodable).
+    pub transaction_kind: Option<TransactionKind>,
+}
+
+impl OpenProposal {
+    /// Whether Squads v4 would accept execution of this stale approved proposal:
+    /// only when its transaction account was read and is a vault transaction or a
+    /// batch. A transaction not read is not counted here; the scan lists it under
+    /// `search::STALE_TRANSACTIONS` instead.
+    pub fn executable_when_stale(&self) -> bool {
+        self.status.is_executable()
+            && self
+                .transaction_kind
+                .is_some_and(TransactionKind::executable_when_stale)
+    }
 }
 
 /// A proposal account the decoder could not read. It is listed, and the other
@@ -116,7 +133,9 @@ pub struct MultisigFacts {
     /// Proposal indexes in the open range that were not read (the newest are read).
     pub proposals_not_read: u64,
     /// Approved or executing proposals at or below the stale transaction index, in
-    /// the window read. Squads can still execute an approved vault transaction there.
+    /// the window read, each with the kind of its transaction account when read.
+    /// Squads can still execute an approved vault transaction or batch there, never
+    /// a config transaction.
     pub stale_approved: Vec<OpenProposal>,
     /// Indexes at or below the stale index older than the window: not read.
     pub stale_not_read: u64,
@@ -136,6 +155,9 @@ pub mod search {
     pub const SIGNATURES: &str = "recent-signatures";
     pub const PROPOSALS: &str = "open-proposals";
     pub const STALE_PROPOSALS: &str = "stale-approved-proposals";
+    /// The transaction account of a stale approved proposal could not be read or
+    /// decoded, so whether Squads would still execute it is unknown.
+    pub const STALE_TRANSACTIONS: &str = "stale-transaction-kinds";
     pub const SUPPLIED_MULTISIG: &str = "supplied-multisig";
     pub const NONCES: &str = "durable-nonces";
 }

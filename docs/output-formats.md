@@ -58,7 +58,7 @@ Each program:
 | `nonce_accounts_by_signer` | `[{key, count}]` when the nonce search ran, else null |
 | `matched_rules` | Rule ids, in report order |
 | `result` | The result text above |
-| `searches_not_possible` | `[{search, reason}]`: each search that could not be made, and why |
+| `searches_not_possible` | `[{search, reason}]`: each search that could not be made, and why. `search` is `squads-v4-index`, `recent-signatures`, `open-proposals`, `stale-approved-proposals`, `stale-transaction-kinds` (a stale approved proposal's transaction account was not read; added in 0.1.1), `supplied-multisig` or `durable-nonces` |
 | `error` | Why the scan stopped early, else null |
 
 The multisig:
@@ -72,7 +72,7 @@ The multisig:
 | `members` | `[{key, permissions, mask}]`; `permissions` names the bits (`initiate`, `vote`, `execute`) |
 | `open_proposals` | `[{transaction_index, address, status, approvals}]` in the open range |
 | `proposals_not_read` | Open-range indexes older than the newest 500, not read |
-| `stale_approved_proposals` | Approved or executing proposals in the stale window, same shape |
+| `stale_approved_proposals` | Approved or executing proposals in the stale window, same shape plus `transaction_kind`: `vault-transaction`, `config-transaction` or `batch`, or null when the transaction account was not read (then `searches_not_possible` has a `stale-transaction-kinds` entry). Added in 0.1.1, within version 1. Only vault transactions and batches match `approved-proposal-still-executable` |
 | `stale_proposals_not_read` | Indexes at or below the stale index older than the window |
 | `undecodable_proposals` | `[{transaction_index, address, error}]` |
 

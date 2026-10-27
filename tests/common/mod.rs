@@ -181,6 +181,69 @@ pub fn proposal_bytes(multisig: &Address, index: u64, status: u8) -> Vec<u8> {
     d
 }
 
+/// The Squads v4 transaction account types a proposal can belong to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TxKind {
+    Vault,
+    Config,
+    Batch,
+}
+
+/// Constructed transaction account data for `multisig` at `index`, from the public
+/// Squads v4 layouts (`state/vault_transaction.rs`, `state/config_transaction.rs`,
+/// `state/batch.rs`). The discriminator is computed here, sha256("account:<Name>"),
+/// not taken from this crate. Each starts with multisig, creator, index and bump.
+pub fn transaction_bytes(kind: TxKind, multisig: &Address, index: u64) -> Vec<u8> {
+    use sha2::{Digest, Sha256};
+    let name = match kind {
+        TxKind::Vault => "VaultTransaction",
+        TxKind::Config => "ConfigTransaction",
+        TxKind::Batch => "Batch",
+    };
+    let mut d = Sha256::digest(format!("account:{name}").as_bytes())[..8].to_vec();
+    d.extend(multisig.as_bytes());
+    d.extend([5; 32]); // creator
+    d.extend(index.to_le_bytes());
+    d.push(254); // bump
+    match kind {
+        TxKind::Vault => {
+            d.extend([0, 255]); // vault index, vault bump
+            d.extend(0u32.to_le_bytes()); // ephemeral signer bumps
+            d.extend([1, 1, 0]); // message: signers, writable signers, writable non-signers
+            for _ in 0..3 {
+                d.extend(0u32.to_le_bytes()); // keys, instructions, lookups
+            }
+        }
+        TxKind::Config => {
+            d.extend(1u32.to_le_bytes()); // one action
+            d.push(2); // ChangeThreshold
+            d.extend(1u16.to_le_bytes());
+        }
+        TxKind::Batch => {
+            d.extend([0, 255]); // vault index, vault bump
+            d.extend(2u32.to_le_bytes()); // size
+            d.extend(0u32.to_le_bytes()); // executed transaction index
+        }
+    }
+    d
+}
+
+/// The transaction PDA for `index`, derived here from the public seeds: `multisig`,
+/// the multisig, `transaction`, the index as u64 little-endian.
+pub fn transaction_pda(multisig: &Address, index: u64) -> Address {
+    solana_authority_scan::read::find_program_address(
+        &[
+            b"multisig",
+            multisig.as_bytes(),
+            b"transaction",
+            &index.to_le_bytes(),
+        ],
+        &squads::PROGRAM_ID,
+    )
+    .unwrap()
+    .0
+}
+
 /// A constructed Squads v4 account holding `data`.
 pub fn squads_account(data: Vec<u8>) -> Account {
     Account {

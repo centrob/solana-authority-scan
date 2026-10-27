@@ -21,6 +21,14 @@ pub const PROGRAM_ID: Address = Address::new([
 pub const MULTISIG_DISCRIMINATOR: [u8; 8] = [0xe0, 0x74, 0x79, 0xba, 0x44, 0xa1, 0x4f, 0xec];
 /// sha256("account:Proposal")[..8].
 pub const PROPOSAL_DISCRIMINATOR: [u8; 8] = [0x1a, 0x5e, 0xbd, 0xbb, 0x74, 0x88, 0x35, 0x21];
+/// sha256("account:VaultTransaction")[..8].
+pub const VAULT_TRANSACTION_DISCRIMINATOR: [u8; 8] =
+    [0xa8, 0xfa, 0xa2, 0x64, 0x51, 0x0e, 0xa2, 0xcf];
+/// sha256("account:ConfigTransaction")[..8].
+pub const CONFIG_TRANSACTION_DISCRIMINATOR: [u8; 8] =
+    [0x5e, 0x08, 0x04, 0x23, 0x71, 0x8b, 0x8b, 0x70];
+/// sha256("account:Batch")[..8].
+pub const BATCH_DISCRIMINATOR: [u8; 8] = [0x9c, 0xc2, 0x46, 0x2c, 0x16, 0x58, 0x89, 0x2c];
 
 const SEED_PREFIX: &[u8] = b"multisig";
 const SEED_VAULT: &[u8] = b"vault";
@@ -232,6 +240,99 @@ pub fn decode_proposal(data: &[u8]) -> Result<Proposal, DecodeError> {
     })
 }
 
+/// The kind of transaction account a proposal belongs to, from its discriminator.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TransactionKind {
+    Vault,
+    Config,
+    Batch,
+}
+
+/// Names used in the report. Matched by readers of the JSON.
+pub mod transaction_kind {
+    pub const VAULT: &str = "vault-transaction";
+    pub const CONFIG: &str = "config-transaction";
+    pub const BATCH: &str = "batch";
+}
+
+impl TransactionKind {
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Vault => transaction_kind::VAULT,
+            Self::Config => transaction_kind::CONFIG,
+            Self::Batch => transaction_kind::BATCH,
+        }
+    }
+
+    /// Whether Squads v4 still accepts execution of an approved transaction of this
+    /// kind once it is at or below the stale transaction index. In the Squads v4
+    /// program source, `config_transaction_execute` refuses a stale proposal
+    /// (`StaleProposal`); `vault_transaction_execute` and `batch_execute_transaction`
+    /// have no staleness check. File and line references: `docs/how-it-works.md`,
+    /// "Proposals".
+    ///
+    /// "Executable" means the Squads program would accept the execute instruction,
+    /// not that the inner instructions would succeed.
+    pub const fn executable_when_stale(self) -> bool {
+        matches!(self, Self::Vault | Self::Batch)
+    }
+}
+
+/// The header every Squads v4 transaction account starts with: the discriminator,
+/// then `multisig`, `creator`, `index` (VaultTransaction, ConfigTransaction and
+/// Batch all share it).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TransactionHeader {
+    pub kind: TransactionKind,
+    pub multisig: Address,
+    pub index: u64,
+}
+
+/// Decodes the kind, multisig and index of a transaction account. Any discriminator
+/// but the three transaction kinds is refused.
+pub fn decode_transaction_header(data: &[u8]) -> Result<TransactionHeader, DecodeError> {
+    let mut r = Reader::new(data, "Transaction");
+    let found = r.take(8, "discriminator")?;
+    let kind = if found == VAULT_TRANSACTION_DISCRIMINATOR {
+        TransactionKind::Vault
+    } else if found == CONFIG_TRANSACTION_DISCRIMINATOR {
+        TransactionKind::Config
+    } else if found == BATCH_DISCRIMINATOR {
+        TransactionKind::Batch
+    } else {
+        return Err(DecodeError {
+            account: "Transaction",
+            field: "discriminator",
+            offset: 0,
+            reason: Reason::WrongType,
+        });
+    };
+    let multisig = r.address("multisig")?;
+    r.address("creator")?;
+    let index = r.u64("index")?;
+    Ok(TransactionHeader {
+        kind,
+        multisig,
+        index,
+    })
+}
+
+/// The transaction PDA for `index` (a vault transaction, config transaction or batch):
+/// seeds `multisig`, the multisig address, `transaction`, the index as u64
+/// little-endian.
+pub fn transaction_address(multisig: &Address, index: u64) -> Result<Address, PdaError> {
+    find_program_address(
+        &[
+            SEED_PREFIX,
+            multisig.as_bytes(),
+            SEED_TRANSACTION,
+            &index.to_le_bytes(),
+        ],
+        &PROGRAM_ID,
+    )
+    .map(|(address, _)| address)
+}
+
 /// The vault PDA at `index`: seeds `multisig`, the multisig address, `vault`, index.
 pub fn vault_address(multisig: &Address, index: u8) -> Result<Address, PdaError> {
     find_program_address(
@@ -355,6 +456,75 @@ mod tests {
                 },
             ],
         }
+    }
+
+    #[test]
+    fn discriminators_are_sha256_of_the_anchor_account_names() {
+        use sha2::{Digest, Sha256};
+        for (name, constant) in [
+            ("Multisig", MULTISIG_DISCRIMINATOR),
+            ("Proposal", PROPOSAL_DISCRIMINATOR),
+            ("VaultTransaction", VAULT_TRANSACTION_DISCRIMINATOR),
+            ("ConfigTransaction", CONFIG_TRANSACTION_DISCRIMINATOR),
+            ("Batch", BATCH_DISCRIMINATOR),
+        ] {
+            let digest = Sha256::digest(format!("account:{name}").as_bytes());
+            assert_eq!(digest.get(..8), Some(constant.as_slice()), "{name}");
+        }
+    }
+
+    #[test]
+    fn transaction_headers_decode_by_discriminator_and_others_are_refused() {
+        let multisig = Address::new([9; 32]);
+        for (disc, kind) in [
+            (VAULT_TRANSACTION_DISCRIMINATOR, TransactionKind::Vault),
+            (CONFIG_TRANSACTION_DISCRIMINATOR, TransactionKind::Config),
+            (BATCH_DISCRIMINATOR, TransactionKind::Batch),
+        ] {
+            let mut d = disc.to_vec();
+            d.extend(multisig.as_bytes());
+            d.extend([5; 32]);
+            d.extend(7u64.to_le_bytes());
+            assert_eq!(
+                decode_transaction_header(&d),
+                Ok(TransactionHeader {
+                    kind,
+                    multisig,
+                    index: 7
+                })
+            );
+            let (_, short) = d.split_last().unwrap();
+            assert!(decode_transaction_header(short).is_err(), "short");
+        }
+        let mut proposal = PROPOSAL_DISCRIMINATOR.to_vec();
+        proposal.extend([0; 72]);
+        assert_eq!(
+            decode_transaction_header(&proposal).map_err(|e| e.reason),
+            Err(Reason::WrongType)
+        );
+        assert!(!TransactionKind::Config.executable_when_stale());
+        assert!(TransactionKind::Vault.executable_when_stale());
+        assert!(TransactionKind::Batch.executable_when_stale());
+    }
+
+    #[test]
+    fn transaction_pda_is_the_proposal_seeds_without_the_suffix() {
+        let multisig = Address::new([9; 32]);
+        let (expected, _) = find_program_address(
+            &[
+                b"multisig",
+                multisig.as_bytes(),
+                b"transaction",
+                &5u64.to_le_bytes(),
+            ],
+            &PROGRAM_ID,
+        )
+        .unwrap();
+        assert_eq!(transaction_address(&multisig, 5), Ok(expected));
+        assert_ne!(
+            transaction_address(&multisig, 5).ok(),
+            proposal_address(&multisig, 5).ok()
+        );
     }
 
     #[test]
