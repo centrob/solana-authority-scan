@@ -134,7 +134,9 @@ fn proposals_json(list: &[OpenProposal]) -> Vec<Value> {
 
 /// The stale approved proposals: the same shape, plus `transaction_kind` (added in
 /// version 1 of the schema, 0.1.1): `vault-transaction`, `config-transaction`,
-/// `batch`, or null when the transaction account was not read.
+/// `batch`, or null when the transaction account was not read; and `check` (added in
+/// version 1, 0.1.2): the `execution::Check` name for a vault transaction or batch,
+/// else null.
 fn stale_proposals_json(list: &[OpenProposal]) -> Vec<Value> {
     proposals_json(list)
         .into_iter()
@@ -145,6 +147,10 @@ fn stale_proposals_json(list: &[OpenProposal]) -> Vec<Value> {
                     "transaction_kind".to_owned(),
                     p.transaction_kind
                         .map_or(Value::Null, |k| Value::from(k.name())),
+                );
+                map.insert(
+                    "check".to_owned(),
+                    p.check.map_or(Value::Null, |c| Value::from(c.name())),
                 );
             }
             v
@@ -378,10 +384,29 @@ pub fn to_markdown(ctx: &RunContext, results: &[ProgramResult]) -> String {
                     .iter()
                     .filter(|p| p.executable_when_stale())
                     .count();
+                let would_fail = m
+                    .stale_approved
+                    .iter()
+                    .filter(|p| p.executable_when_stale() && !p.still_executable())
+                    .count();
                 s.push_str(&format!(
-                    "| Approved at or below the stale index | {} ({executable} a vault transaction or batch; read #{first} to #{stale}{older}) |\n",
+                    "| Approved at or below the stale index | {} ({executable} a vault transaction or batch, {would_fail} of them would fail if executed now; read #{first} to #{stale}{older}) |\n",
                     m.stale_approved.len()
                 ));
+                for p in &m.stale_approved {
+                    let Some(check) = p.check else { continue };
+                    let outcome = if check.would_fail() {
+                        "would fail if executed now: not a finding"
+                    } else {
+                        "kept as a finding"
+                    };
+                    s.push_str(&format!(
+                        "| Stale approved #{} | {}, check {} ({outcome}) |\n",
+                        p.transaction_index,
+                        p.transaction_kind.map_or("-", |k| k.name()),
+                        check.name()
+                    ));
+                }
             }
             for u in &m.undecodable_proposals {
                 s.push_str(&format!(

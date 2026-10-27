@@ -7,7 +7,11 @@
 //! supplied, or else looked up in the Squads v4 vault index, then searched for in its
 //! own recent transactions; the multisig decoded; its open proposals, and a window of
 //! proposals at or below the stale index, read with `getMultipleAccounts` in chunks
-//! of at most 100.
+//! of at most 100; for each stale approved vault transaction or batch, whether
+//! executing it now would fail (`execution`), from one more read of the accounts its
+//! loader instructions name (and, for a batch, its next transaction).
+
+use std::collections::HashMap;
 
 use crate::read::{Address, DataSlice, Filter, ProgramAccountsQuery, Rpc, SignaturesQuery};
 
@@ -368,7 +372,8 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
                 });
                 Vec::new()
             });
-        let not_read = self.read_transaction_kinds(address, &mut stale_approved);
+        let (not_read, data) = self.read_transaction_kinds(address, &mut stale_approved);
+        crate::execution::check_stale(self.rpc, address, &mut stale_approved, &data);
         if !not_read.is_empty() {
             facts.not_possible.push(NotPossible {
                 search: search::STALE_TRANSACTIONS,
@@ -397,14 +402,18 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
     /// vault transaction or batch, never a stale config transaction). An account that
     /// is missing, not owned by Squads v4, undecodable, or for another multisig or
     /// index keeps `None`, and is returned as `#<index>: <why>`: the caller reports
-    /// it as not read, never as a finding and never as fine.
+    /// it as not read, never as a finding and never as fine. The data of each vault
+    /// transaction and batch read is returned by its position in `stale`, for
+    /// `execution::check_stale`.
     fn read_transaction_kinds(
         &self,
         multisig: &Address,
         stale: &mut [OpenProposal],
-    ) -> Vec<String> {
+    ) -> (Vec<String>, HashMap<usize, Vec<u8>>) {
         let mut not_read = Vec::new();
-        for chunk in stale.chunks_mut(MULTIPLE_ACCOUNTS_CHUNK) {
+        let mut data = HashMap::new();
+        for (n, chunk) in stale.chunks_mut(MULTIPLE_ACCOUNTS_CHUNK).enumerate() {
+            let first = n.saturating_mul(MULTIPLE_ACCOUNTS_CHUNK);
             let keys =
                 match chunk
                     .iter()
@@ -439,7 +448,9 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
                     continue;
                 }
             };
-            for ((proposal, key), account) in chunk.iter_mut().zip(&keys).zip(accounts) {
+            for (i, ((proposal, key), account)) in
+                chunk.iter_mut().zip(&keys).zip(accounts).enumerate()
+            {
                 let index = proposal.transaction_index;
                 let kind = match account {
                     None => Err(format!("no account at {key}")),
@@ -451,16 +462,21 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
                         Ok(h) if h.multisig != *multisig || h.index != index => Err(format!(
                             "{key} is for another multisig or transaction index"
                         )),
-                        Ok(h) => Ok(h.kind),
+                        Ok(h) => Ok((h.kind, a.data)),
                     },
                 };
                 match kind {
-                    Ok(kind) => proposal.transaction_kind = Some(kind),
+                    Ok((kind, bytes)) => {
+                        proposal.transaction_kind = Some(kind);
+                        if kind.executable_when_stale() {
+                            data.insert(first.saturating_add(i), bytes);
+                        }
+                    }
                     Err(why) => not_read.push(format!("#{index}: {why}")),
                 }
             }
         }
-        not_read
+        (not_read, data)
     }
 
     /// Reads the proposals at `indexes` and keeps those of `multisig` whose status
@@ -513,6 +529,7 @@ impl<R: Rpc + ?Sized> Scanner<'_, R> {
                         status: proposal.status,
                         approvals: proposal.approved.len(),
                         transaction_kind: None,
+                        check: None,
                     });
                 }
             }

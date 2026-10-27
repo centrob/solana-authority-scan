@@ -101,11 +101,15 @@ pub const APPROVED_PROPOSAL_STILL_EXECUTABLE: Rule = Rule {
         such transactions stale but still executes an approved vault transaction or batch \
         (it refuses a stale config transaction, which this rule does not match), so any \
         member with the execute permission can run it long after the members who \
-        approved it expected it to be used or forgotten. Executable means the Squads \
-        program would accept the execute instruction; whether the inner instructions \
-        would succeed today (for example, an upgrade whose buffer has since changed) is \
-        not checked. A proposal in the deprecated executing status also matches, although \
-        the current Squads v4 program executes only approved proposals.",
+        approved it expected it to be used or forgotten. The scanner decodes the stored \
+        message and leaves out a proposal that would certainly fail if executed now: an \
+        upgradeable-loader upgrade whose buffer is missing, owned by another program, not \
+        a buffer, or under another authority, or a set-authority or close whose account \
+        is missing or under another authority. Any other proposal is kept, including one \
+        whose message uses address lookup tables (not fully checked) or calls other \
+        programs, whose inner instructions are not checked; each entry names its check. \
+        A proposal in the deprecated executing status also matches, although the current \
+        Squads v4 program executes only approved proposals.",
     recommendation: "Review each approved proposal listed. Execute it if it is still \
         wanted; otherwise cancel it so it cannot be executed later.",
     weakness: true,
@@ -190,15 +194,20 @@ pub fn evaluate(facts: &ProgramFacts) -> Vec<Match> {
         }
         // Only vault transactions and batches: Squads v4 refuses a stale config
         // transaction (`docs/how-it-works.md`, "Proposals"). One whose transaction was
-        // not read is listed as not read by the scan, not matched here.
+        // not read is listed as not read by the scan, not matched here. One that would
+        // certainly fail if executed now is not matched either (`execution`).
         let list: Vec<String> = m
             .stale_approved
             .iter()
-            .filter(|p| p.executable_when_stale())
+            .filter(|p| p.still_executable())
             .filter_map(|p| {
                 p.transaction_kind.map(|kind| {
+                    let check = p.check.map_or_else(String::new, |c| match c.note() {
+                        Some(note) => format!(" (check: {}; {note})", c.name()),
+                        None => format!(" (check: {})", c.name()),
+                    });
                     format!(
-                        "#{} {} {}",
+                        "#{} {} {}{check}",
                         p.transaction_index,
                         p.status.name(),
                         kind.name()
@@ -377,6 +386,7 @@ mod tests {
                 status: ProposalStatus::Approved(0),
                 approvals: 2,
                 transaction_kind: kind,
+                check: None,
             });
         }
         f
@@ -408,6 +418,29 @@ mod tests {
     }
 
     #[test]
+    fn a_stale_proposal_that_would_fail_matches_nothing_and_a_kept_one_names_its_check() {
+        use crate::execution::Check;
+        let mut f = with_stale(Some(TransactionKind::Vault));
+        if let Some(m) = f.multisig.as_mut() {
+            m.stale_approved[0].check = Some(Check::BufferMissing);
+        }
+        assert!(ids(&f).is_empty());
+        if let Some(m) = f.multisig.as_mut() {
+            m.stale_approved[0].check = Some(Check::NotCheckedAlt);
+        }
+        let matched = evaluate(&f);
+        assert_eq!(matched.len(), 1);
+        assert!(
+            matched[0].evidence.ends_with(
+                "#5 approved vault-transaction (check: not-checked-alt; not fully checked: \
+                 the message uses address lookup tables)"
+            ),
+            "{}",
+            matched[0].evidence
+        );
+    }
+
+    #[test]
     fn config_authority_set() {
         let mut ms = multisig(2, 3, 60);
         ms.config_authority = Some(Address::new([5; 32]));
@@ -424,6 +457,7 @@ mod tests {
                 status: ProposalStatus::Approved(0),
                 approvals: 2,
                 transaction_kind: None,
+                check: None,
             });
         }
         let matched = evaluate(&f);

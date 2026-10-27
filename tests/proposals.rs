@@ -176,9 +176,10 @@ fn an_approved_proposal_at_or_below_the_stale_index_is_still_executable() {
         ]
     );
     assert!(
-        r.matches[0]
-            .evidence
-            .ends_with("#3 executing vault-transaction, #5 approved vault-transaction"),
+        r.matches[0].evidence.ends_with(
+            "#3 executing vault-transaction (check: no-loader-instruction), \
+                 #5 approved vault-transaction (check: no-loader-instruction)"
+        ),
         "{}",
         r.matches[0].evidence
     );

@@ -4,7 +4,10 @@
 //!   derives addresses; it cannot sign, send, simulate or airdrop, and holds no keys.
 //! - Pure decoders over account bytes: [`loader`] (upgradeable, BPFLoader2 and older,
 //!   loader v4), [`squads`] (Squads v4 Multisig and Proposal, vault and proposal
-//!   PDAs), [`txn`] (instruction accounts from a wire transaction).
+//!   PDAs), [`squads_tx`] (Squads v4 vault transactions, batches and their stored
+//!   messages), [`txn`] (instruction accounts from a wire transaction).
+//! - [`execution`]: whether a stale approved vault transaction or batch would fail
+//!   if executed now, from the accounts its loader instructions name.
 //! - [`index`]: the Squads v4 vault index, vault PDA to multisig.
 //! - [`rules`]: named rules with a severity; [`report`]: the JSON report, the
 //!   Markdown summary and the candidate findings ([`candidate`]).
@@ -19,6 +22,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub mod bytes;
 pub mod candidate;
+pub mod execution;
 pub mod facts;
 pub mod index;
 pub mod loader;
@@ -27,4 +31,5 @@ pub mod report;
 pub mod rules;
 pub mod scan;
 pub mod squads;
+pub mod squads_tx;
 pub mod txn;

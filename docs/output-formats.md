@@ -72,9 +72,31 @@ The multisig:
 | `members` | `[{key, permissions, mask}]`; `permissions` names the bits (`initiate`, `vote`, `execute`) |
 | `open_proposals` | `[{transaction_index, address, status, approvals}]` in the open range |
 | `proposals_not_read` | Open-range indexes older than the newest 500, not read |
-| `stale_approved_proposals` | Approved or executing proposals in the stale window, same shape plus `transaction_kind`: `vault-transaction`, `config-transaction` or `batch`, or null when the transaction account was not read (then `searches_not_possible` has a `stale-transaction-kinds` entry). Added in 0.1.1, within version 1. Only vault transactions and batches match `approved-proposal-still-executable` |
+| `stale_approved_proposals` | Approved or executing proposals in the stale window, same shape plus `transaction_kind`: `vault-transaction`, `config-transaction` or `batch`, or null when the transaction account was not read (then `searches_not_possible` has a `stale-transaction-kinds` entry). Added in 0.1.1, within version 1. Only vault transactions and batches match `approved-proposal-still-executable`. Also `check` (added in 0.1.2, within version 1): for a vault transaction or batch, the outcome of the would-it-fail check below; null for a config transaction or a transaction not read |
 | `stale_proposals_not_read` | Indexes at or below the stale index older than the window |
 | `undecodable_proposals` | `[{transaction_index, address, error}]` |
+
+`check` values. The first seven mean executing the proposal now would certainly fail,
+so it does not match `approved-proposal-still-executable`; the rest keep the match, and
+the rule's evidence names them (`#5 approved vault-transaction (check: not-checked-alt;
+not fully checked: …)`). How each is decided: [how-it-works.md](how-it-works.md),
+"Would it still execute?".
+
+| `check` | Flagged | Meaning |
+|---|---|---|
+| `buffer-missing` | no | An `Upgrade` whose buffer account does not exist |
+| `buffer-not-loader-owned` | no | An `Upgrade` whose buffer is owned by another program |
+| `buffer-not-buffer-state` | no | An `Upgrade` whose buffer account is not in the Buffer state |
+| `buffer-wrong-authority` | no | An `Upgrade` whose buffer has no authority, or not the instruction's authority |
+| `account-missing` | no | A `SetAuthority`, `SetAuthorityChecked` or `Close` whose account does not exist |
+| `account-not-loader-owned` | no | The same, with the account owned by another program |
+| `account-wrong-authority` | no | A `SetAuthority` or `SetAuthorityChecked` whose account has no authority or another one, or a `Close` of a buffer with another authority |
+| `no-loader-instruction` | yes | No upgradeable-loader instruction; nothing in the message is checked |
+| `not-shown-to-fail` | yes | Every loader instruction that could be checked looked executable, or none could be checked. Not a claim that it would succeed |
+| `not-checked-alt` | yes | The message uses address lookup tables: not fully checked |
+| `not-checked-undecodable` | yes | The transaction, batch or batch transaction did not decode, or names a key outside the message |
+| `not-checked-batch` | yes | A batch with no transaction left, or whose next transaction account is not Squads v4's |
+| `not-checked-read-failed` | yes | A read the check needed failed |
 
 Each entry of `candidates` has the candidate fields below plus `rule` (the rule id) and
 `source`.

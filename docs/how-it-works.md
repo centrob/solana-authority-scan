@@ -15,6 +15,10 @@ cannot see. For the output files, see [output-formats.md](output-formats.md).
   - `loader`: dispatch on the program account's owner; the ProgramData header.
   - `squads`: Squads v4 Multisig and Proposal decoders; vault and proposal PDAs; the
     open range and the stale window of proposal indexes.
+  - `squads_tx`: Squads v4 `VaultTransaction`, `Batch` and `VaultBatchTransaction`,
+    with the stored message; the batch transaction PDA.
+  - `execution`: whether a stale approved vault transaction or batch would fail if
+    executed now, from the accounts its loader instructions name.
   - `txn`: the accounts of each instruction to one program in a wire transaction
     (legacy and v0).
   - `index`: the Squads v4 vault index (vault PDA to multisig and vault index).
@@ -59,7 +63,13 @@ cannot see. For the output files, see [output-formats.md](output-formats.md).
 - **BPF Upgradeable Loader** (bincode `UpgradeableLoaderState`, u32 tag): the program
   account is tag 2 and the ProgramData address (36 bytes). ProgramData is tag 3, the
   last deploy slot (u64), and the upgrade authority as `Option<Pubkey>` (one-byte tag):
-  a 45-byte header, then the ELF. No authority means immutable.
+  a 45-byte header, then the ELF. No authority means immutable. A buffer is tag 1 and
+  its authority as `Option<Pubkey>`, then the code; tag 0 is uninitialized. For the
+  stale-proposal check, instructions are read by their bincode u32 tag: 3 `Upgrade`
+  (accounts: ProgramData, program, buffer, spill, rent, clock, authority), 4
+  `SetAuthority` and 7 `SetAuthorityChecked` (account, current authority, new
+  authority), 5 `Close` (account, recipient, authority, program), from the loader-v3
+  interface's `UpgradeableLoaderInstruction`.
 - **BPFLoader2 and BPFLoader** (`BPFLoader2111…`, `BPFLoader1111…`): no state;
   immutable. The account must be executable.
 - **Loader v4** (`LoaderV4State`, 48-byte header): slot (u64), authority or next version
@@ -79,8 +89,29 @@ cannot see. For the output files, see [output-formats.md](output-formats.md).
     5 executed, 6 cancelled, with timestamps), bump, then the approved, rejected and
     cancelled key lists. Open means draft, active, approved or executing. Executable
     means approved or executing.
-  - Transaction accounts (`VaultTransaction`, `ConfigTransaction`, `Batch`): only the
-    discriminator and the shared header are read: multisig, creator, index u64.
+  - Transaction accounts (`VaultTransaction`, `ConfigTransaction`, `Batch`): the
+    discriminator and the shared header: multisig, creator, index u64. For a config
+    transaction nothing more is read.
+  - `VaultTransaction`, in full: the header, bump u8, vault index u8, vault bump u8,
+    ephemeral signer bumps `Vec<u8>`, then the stored `VaultTransactionMessage`:
+    `num_signers`, `num_writable_signers`, `num_writable_non_signers` (u8 each),
+    `account_keys` `Vec<Pubkey>`, `instructions` `Vec<{program_id_index u8,
+    account_indexes Vec<u8>, data Vec<u8>}>`, `address_table_lookups`
+    `Vec<{account_key, writable_indexes Vec<u8>, readonly_indexes Vec<u8>}>`. Every
+    `Vec` has a Borsh u32 length: the stored message is the program's own type, not
+    the compact `TransactionMessage` (u8 and u16 lengths) the create instruction
+    takes.
+  - `Batch`: the header, bump, vault index, vault bump (u8 each), size u32, executed
+    transaction index u32 (0 when none has run). `VaultBatchTransaction`: its own
+    discriminator, bump u8, ephemeral signer bumps `Vec<u8>`, then the same message.
+    Batch transaction PDA seeds: `"multisig"`, multisig, `"transaction"`, the batch
+    index u64, `"batch_transaction"`, the transaction index u32 (both little-endian,
+    numbered from 1).
+  - These layouts are from the Squads v4 program source (github.com/Squads-Protocol/v4,
+    commit `af94153ff77a28b6effe46b9c94baaa93742b48c`, under
+    `programs/squads_multisig_program/src/`): `state/vault_transaction.rs`,
+    `state/batch.rs`, `state/seeds.rs`, and the `batch` and `transaction` account
+    constraints in `instructions/batch_execute_transaction.rs`.
   - Vault PDA seeds: `"multisig"`, multisig, `"vault"`, index u8. Proposal PDA seeds:
     `"multisig"`, multisig, `"transaction"`, index u64 little-endian, `"proposal"`.
     Transaction PDA seeds: the same without `"proposal"`.
@@ -129,12 +160,56 @@ cannot see. For the output files, see [output-formats.md](output-formats.md).
   another multisig or index, or a read that fails, is listed under
   `stale-transaction-kinds` as not read, and the scan is incomplete. It is never a
   finding and never counted as fine.
-- Limits. "Executable" means the Squads v4 program would accept the execute
-  instruction, not that the inner instructions would succeed today (an upgrade whose
-  buffer is no longer owned by the vault still matches). All three execute
-  instructions accept only the `approved` status; a stale proposal in the deprecated
-  `executing` status with a vault transaction or batch still matches, a smaller known
-  false positive.
+- Each stale approved vault transaction or batch is then checked for whether it would
+  fail if executed now (next section). One that would is not a finding.
+- Limits. All three execute instructions accept only the `approved` status; a stale
+  proposal in the deprecated `executing` status with a vault transaction or batch
+  still matches, a smaller known false positive.
+
+## Would it still execute?
+
+Squads v4 runs a vault transaction's instructions atomically: if one fails, the whole
+execute fails. So a stale approved proposal whose message holds an instruction certain
+to fail cannot be executed now, and is not a finding. The check reads accounts only,
+through `getMultipleAccounts`; it never simulates a transaction (`Rpc` has no such
+method).
+
+- The message is decoded from the transaction account already read. For a batch, the
+  `Batch` account gives the next transaction it would run (executed index + 1; the
+  batch runs its transactions in order, one per execute), and that
+  `VaultBatchTransaction` is read at its PDA in one batched call. Only that next
+  transaction is checked: if it would fail, the batch cannot advance.
+- A message with any address lookup table is not checked: some keys are unresolved.
+  The finding is kept as `not-checked-alt`, and its evidence says it was not fully
+  checked.
+- Each instruction to the upgradeable loader is matched by tag. `Upgrade` names its
+  buffer (account 2) and authority (account 6); `SetAuthority` and
+  `SetAuthorityChecked` their account (0) and current authority (1); `Close` its
+  account (0) and authority (2). Other loader instructions, and loader instructions
+  with too few accounts, are not checked. An account that an earlier instruction in
+  the same message names (as an account or a program) is not checked either: that
+  instruction could create or change it first.
+- The named accounts are read in one more batched call (at most 4 a call, since a
+  buffer holds a whole program). The loader (agave `programs/bpf_loader`) refuses:
+  - `Upgrade` when the buffer has no data (missing), is not in the Buffer state, or
+    its authority is not the instruction's authority; a buffer another program owns
+    cannot have its lamports and data taken by the loader.
+  - `SetAuthority` and `SetAuthorityChecked` when the account is missing, owned by
+    another program, not a Buffer or ProgramData, immutable, or under another
+    authority.
+  - `Close` when the account is missing or owned by another program, or is a buffer
+    under another authority. Closing an uninitialized account needs no authority, and
+    closing ProgramData depends on more accounts: both are kept.
+- The first certain failure names the `check` (`buffer-missing` and so on). Otherwise
+  the finding is kept: `no-loader-instruction` when no instruction is to the loader,
+  `not-shown-to-fail` when the loader instructions checked looked executable (or none
+  could be checked), `not-checked-read-failed`, `not-checked-undecodable` or
+  `not-checked-batch` when the check could not run. Values and meanings:
+  [output-formats.md](output-formats.md).
+- Limits. Instructions to other programs are never checked, so a kept proposal may
+  still fail. "Would fail" is as of the slot read: a missing buffer can be created
+  again at the same address by whoever holds its key, and an authority can change, so
+  a proposal left out today can become executable later.
 
 ## Nonces
 

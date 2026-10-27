@@ -102,7 +102,7 @@ fn a_stale_approved_vault_transaction_is_still_executable() {
     assert!(
         r.matches[0]
             .evidence
-            .ends_with("#5 approved vault-transaction"),
+            .ends_with("#5 approved vault-transaction (check: no-loader-instruction)"),
         "{}",
         r.matches[0].evidence
     );
@@ -121,7 +121,9 @@ fn a_stale_approved_batch_is_still_executable() {
     let r = scan(&rpc);
     assert_eq!(ids(&r)[0], rules::APPROVED_PROPOSAL_STILL_EXECUTABLE.id);
     assert!(
-        r.matches[0].evidence.ends_with("#5 approved batch"),
+        r.matches[0]
+            .evidence
+            .ends_with("#5 approved batch (check: not-checked-read-failed; not checked: an account read failed)"),
         "{}",
         r.matches[0].evidence
     );

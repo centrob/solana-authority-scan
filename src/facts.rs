@@ -3,6 +3,7 @@
 
 use crate::read::Address;
 
+use crate::execution::Check;
 use crate::loader::V4Status;
 use crate::squads::{Multisig, ProposalStatus, TransactionKind};
 
@@ -97,6 +98,10 @@ pub struct OpenProposal {
     /// proposals at or below the stale index; `None` when it was not read (always for
     /// open proposals, and for a stale one whose account was missing or undecodable).
     pub transaction_kind: Option<TransactionKind>,
+    /// For a stale approved vault transaction or batch: whether executing it now
+    /// would certainly fail, or why it was kept (`execution`). `None` when not
+    /// checked (open proposals, config transactions, transactions not read).
+    pub check: Option<Check>,
 }
 
 impl OpenProposal {
@@ -109,6 +114,12 @@ impl OpenProposal {
             && self
                 .transaction_kind
                 .is_some_and(TransactionKind::executable_when_stale)
+    }
+
+    /// Executable when stale, and not shown to fail if executed now: the proposals
+    /// `approved-proposal-still-executable` matches.
+    pub fn still_executable(&self) -> bool {
+        self.executable_when_stale() && !self.check.is_some_and(Check::would_fail)
     }
 }
 

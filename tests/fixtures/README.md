@@ -30,7 +30,9 @@ read is saved, so the tests replay the same scan with no network:
 The scanner now also reads proposals at or below each multisig's stale transaction
 index (the stale window). The fixtures were captured before it did, so they hold no
 such reads; the replay answers those proposal addresses as "no account".
-`tests/proposals.rs` adds constructed proposals where a test needs them.
+`tests/proposals.rs` adds constructed proposals where a test needs them;
+`tests/stale_transactions.rs` and `tests/stale_execution.rs` add constructed
+transaction accounts, batch transactions and loader buffers (synthetic keys).
 
 ## Files
 

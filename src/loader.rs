@@ -235,6 +235,77 @@ pub fn decode_program_data(data: &[u8]) -> Result<ProgramData, DecodeError> {
     })
 }
 
+/// `UpgradeableLoaderState` tags (bincode u32).
+const UNINITIALIZED_TAG: u32 = 0;
+const BUFFER_TAG: u32 = 1;
+
+/// An upgradeable loader account's state, as far as its authority goes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LoaderState {
+    Uninitialized,
+    /// A buffer holding code to deploy; `None` means it can no longer be changed.
+    Buffer {
+        authority: Option<Address>,
+    },
+    Program {
+        programdata: Address,
+    },
+    ProgramData {
+        upgrade_authority: Option<Address>,
+    },
+}
+
+/// Decodes the state at the start of an account the upgradeable loader owns:
+/// tag 0 uninitialized; 1 buffer, then the authority as `Option<Pubkey>`; 2 program,
+/// then the ProgramData address; 3 ProgramData, then the slot (u64) and the upgrade
+/// authority. The code after the header is not read. Any other tag is an error.
+pub fn decode_state(data: &[u8]) -> Result<LoaderState, DecodeError> {
+    let mut r = Reader::new(data, "UpgradeableLoaderState");
+    let at = r.pos();
+    match r.u32("tag")? {
+        UNINITIALIZED_TAG => Ok(LoaderState::Uninitialized),
+        BUFFER_TAG => Ok(LoaderState::Buffer {
+            authority: r.option_address("authority_address")?,
+        }),
+        PROGRAM_TAG => Ok(LoaderState::Program {
+            programdata: r.address("programdata_address")?,
+        }),
+        PROGRAM_DATA_TAG => {
+            r.u64("slot")?;
+            Ok(LoaderState::ProgramData {
+                upgrade_authority: r.option_address("upgrade_authority_address")?,
+            })
+        }
+        tag => Err(DecodeError {
+            account: "UpgradeableLoaderState",
+            field: "tag",
+            offset: at,
+            reason: Reason::BadTag(u64::from(tag)),
+        }),
+    }
+}
+
+/// `UpgradeableLoaderInstruction` tags (bincode u32, the first four bytes of the
+/// instruction data) that the stale-proposal check reads, with the accounts each
+/// takes (agave `programs/bpf_loader/src/lib.rs` and `sdk` loader-v3 interface).
+pub mod instruction {
+    /// Accounts: ProgramData, program, buffer, spill, rent, clock, authority.
+    pub const UPGRADE: u32 = 3;
+    /// Accounts: buffer or ProgramData, current authority, new authority (optional).
+    pub const SET_AUTHORITY: u32 = 4;
+    /// Accounts: the account to close, recipient, authority, program (each after
+    /// the first as the state needs).
+    pub const CLOSE: u32 = 5;
+    /// Accounts: buffer or ProgramData, current authority, new authority (signer).
+    pub const SET_AUTHORITY_CHECKED: u32 = 7;
+}
+
+/// The instruction tag of upgradeable loader instruction data, if it has four bytes.
+pub fn instruction_tag(data: &[u8]) -> Option<u32> {
+    let bytes: [u8; 4] = data.get(..4)?.try_into().ok()?;
+    Some(u32::from_le_bytes(bytes))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -319,5 +390,55 @@ mod tests {
             decode_program_data(&[2, 0, 0, 0]).unwrap_err().reason,
             Reason::WrongType
         );
+    }
+
+    #[test]
+    fn decodes_each_upgradeable_loader_state() {
+        let key = Address::new([4; 32]);
+        let mut buffer = 1u32.to_le_bytes().to_vec();
+        buffer.push(1);
+        buffer.extend(key.as_bytes());
+        buffer.extend([0x7f, b'E']);
+        assert_eq!(
+            decode_state(&buffer),
+            Ok(LoaderState::Buffer {
+                authority: Some(key)
+            })
+        );
+        assert_eq!(
+            decode_state(&[1, 0, 0, 0, 0]),
+            Ok(LoaderState::Buffer { authority: None })
+        );
+        assert_eq!(decode_state(&[0; 4]), Ok(LoaderState::Uninitialized));
+        let mut program = 2u32.to_le_bytes().to_vec();
+        program.extend(key.as_bytes());
+        assert_eq!(
+            decode_state(&program),
+            Ok(LoaderState::Program { programdata: key })
+        );
+        let mut programdata = 3u32.to_le_bytes().to_vec();
+        programdata.extend(9u64.to_le_bytes());
+        programdata.push(1);
+        programdata.extend(key.as_bytes());
+        assert_eq!(
+            decode_state(&programdata),
+            Ok(LoaderState::ProgramData {
+                upgrade_authority: Some(key)
+            })
+        );
+        assert_eq!(
+            decode_state(&[4, 0, 0, 0]).unwrap_err().reason,
+            Reason::BadTag(4)
+        );
+        assert_eq!(decode_state(&[]).unwrap_err().reason, Reason::TooShort);
+        assert_eq!(
+            decode_state(&[1, 0, 0, 0, 2]).unwrap_err().reason,
+            Reason::BadTag(2)
+        );
+        assert_eq!(
+            instruction_tag(&[3, 0, 0, 0, 9]),
+            Some(instruction::UPGRADE)
+        );
+        assert_eq!(instruction_tag(&[3, 0, 0]), None);
     }
 }

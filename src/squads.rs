@@ -30,9 +30,9 @@ pub const CONFIG_TRANSACTION_DISCRIMINATOR: [u8; 8] =
 /// sha256("account:Batch")[..8].
 pub const BATCH_DISCRIMINATOR: [u8; 8] = [0x9c, 0xc2, 0x46, 0x2c, 0x16, 0x58, 0x89, 0x2c];
 
-const SEED_PREFIX: &[u8] = b"multisig";
+pub(crate) const SEED_PREFIX: &[u8] = b"multisig";
 const SEED_VAULT: &[u8] = b"vault";
-const SEED_TRANSACTION: &[u8] = b"transaction";
+pub(crate) const SEED_TRANSACTION: &[u8] = b"transaction";
 const SEED_PROPOSAL: &[u8] = b"proposal";
 
 /// A member's permission bits.
@@ -99,7 +99,7 @@ impl Multisig {
 /// Bytes per member: key and permission mask.
 const MEMBER_LEN: usize = 33;
 
-fn check_discriminator(
+pub(crate) fn check_discriminator(
     r: &mut Reader<'_>,
     expected: &[u8; 8],
     account: &'static str,
